@@ -310,8 +310,7 @@ def newpass(hashed): # hashed = str
 
 def main():
     passw = getpass(prompt='main password:\n') # str
-    hashed = hash_it(passw)#.decode('utf-8') # bytes .decode => str
-    c = 5
+#    hashed = hash_it(passw)#.decode('utf-8') # bytes .decode => str
     passw2 = passw[::-1]
     hash2 = hash_it(passw2)#.decode('utf-8') # bytes .decode => str
     # check if passw is correct:
@@ -319,6 +318,8 @@ def main():
     if not check:
         print('wrong password!')
         raise SystemExit
+
+    c = 5
     while c != 0:
         try:
             c = int(input('\n(1) read passwd\n(2) add new passwd\n'+
