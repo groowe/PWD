@@ -26,14 +26,6 @@ def readfileraw():
         raise SystemExit
     return a # string
 
-#def writerawonce(what):
-#    try:
-#        with open(filename,'r') as f:
-#            a = f.read()
-#    except FileNotFoundError:
-#        with open(filename,'w') as f:
-#            f.write(what+'\n')
-#    return
 
 def readfile(hashed,full=False): # hashed = str
     if not full:
@@ -53,8 +45,6 @@ def readfile(hashed,full=False): # hashed = str
     if not filelines:
         print('empty list of passwords')
         return False
-#    filelines.split('\n')
-#    filelines = filelines[1:]
 #    print(type(filelines))
 #    print(type(filelines[0]))
     uncode(hashed,filelines) # str , [str,str,str,..]
@@ -74,7 +64,6 @@ def uncode(hashed,lines): # str , [str,str,str,...]
 #        print(key)
     if not lines:
         return
-#    return
 #    print(hashed)
 #    hashed= base64.urlsafe_b64encode(hashed)
 #    print(lines) 
@@ -93,7 +82,6 @@ def uncode(hashed,lines): # str , [str,str,str,...]
 #            lines.remove(lines[i])
 #    print(f'len lines = {len(lines)}')
 #    print(f'lines = {lines}')
-
 #    print(lines) 
 #    print(type(lines))
     if type(lines) == list:
@@ -124,7 +112,6 @@ def decrypt(key,token):
     except:
         return False
     return f.decrypt(token)
-
 
 def newpass(hashed): # hashed = str
 #    hashed = base64.urlsafe_b64encode(hashed)
@@ -169,7 +156,6 @@ def main():
     passw = getpass(prompt='main password:\n') # str
     hashed = hash_it(passw)#.decode('utf-8') # bytes .decode => str
     c = 5
-
     passw2 = passw[::-1]
     hash2 = hash_it(passw2)#.decode('utf-8') # bytes .decode => str
     # check if passw is correct:
@@ -190,7 +176,7 @@ def main():
         else:
             raise SystemExit
     return
-
-main()
+if __name__ == '__main__':
+    main()
 
 
