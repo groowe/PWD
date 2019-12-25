@@ -177,12 +177,12 @@ def readfileraw():
         raise SystemExit
     return a # string
 
-def readfile(hashed,full=False): # hashed = str
+def readfile(hashed,full=False,modify=False): # hashed = str
     if not full:
         filelines = readfileraw()
         if not filelines:
             print('first run')
-            p = input('write your password again:\n')
+            p = getpass('write your password again:\n')
             p2 = p[::-1]
             hash2 = hash_it(p2)
             if hashed == hash2:
@@ -207,9 +207,14 @@ def readfile(hashed,full=False): # hashed = str
         return False
 #    print(type(filelines))
 #    print(type(filelines[0]))
-    uncode(hashed,filelines) # str , [str,str,str,..]
+    if not modify:
+        uncode(hashed,filelines) # str , [str,str,str,..]
+    else:
+        a = uncode(hashed,filelines,True)
+        return a
 
-def uncode(hashed,lines): # str , [str,str,str,...]
+
+def uncode(hashed,lines,returnlines = False): # str , [str,str,str,...]
     if type(hashed) == str:
         hashed = hashed.encode('utf-8')
     keys= []
@@ -246,6 +251,8 @@ def uncode(hashed,lines): # str , [str,str,str,...]
 #    print(type(lines))
     if type(lines) == list:
         print('site / username / password')
+        if returnlines:
+            ll = []
         for line in lines:
             k = lines.index(line) % 4
             key = keys[k]
@@ -253,8 +260,20 @@ def uncode(hashed,lines): # str , [str,str,str,...]
 #            print(len(lines[i]))
             raw = decrypt(key,line.encode('utf-8'))
 #            print('raw')
-            raw = raw.decode('utf-8')
-            print(f'{raw}')
+            try:
+
+                raw = raw.decode('utf-8')
+            except AttributeError as exception: # should never happen
+                print(f'error in logic (uncode function)\n{exception}')
+                raise SystemExit
+
+            if not returnlines:
+                print(f'{raw}')
+            else:
+                ll.append(raw)
+        if returnlines:
+            return ll
+
     else:
         print(type(lines))
 
@@ -273,7 +292,7 @@ def decrypt(key,token):
         return False
     return f.decrypt(token)
 
-def newpass(hashed): # hashed = str
+def newpass(hashed,siteusps=None,startover= False): # hashed = str , siteusps =  [site , us , ps ] , startover = wipe first
 #    hashed = base64.urlsafe_b64encode(hashed)
     if type(hashed) == str:
         hashed = hashed.encode('utf-8')
@@ -283,16 +302,41 @@ def newpass(hashed): # hashed = str
         hashed = hashed[32:]
         keys.append(key)
 #    print('keys:')
-    for i in keys:
-        print(i)
-    site = input('name of site (ex: facebook.com):\n') # str
-    us = input('username ?:\n')
+##### for debug :
+#    for i in keys:
+#        print(i)
+################
     ps = 0
-    ps2 = 1
+    if siteusps != None:
+        try:
+            if type(siteusps) != list or len(siteusps) != 3:
+                siteusps = None
+        except:
+            siteusps = None
+    if siteusps != None:
+        site = siteusps[0]
+        us = siteusps[1]
+        ps = siteusps[2]
+########### for debug :  ######################
+#        print(f'site = {site}\ntype site = {type(site)}')
+#        print(f'us = {us}\n type us = {type(us)}')
+#        print(f'ps = {ps}\ntypeps = {type(ps)}')
+#        print(f'siteusps = {siteusps}\ntype siteusps = {type(siteusps)}')
+###############################################
+    else:
+        site = input('name of site (ex: facebook.com):\n') # str
+        us = input('username ?:\n')
+    if ps == 0:
+        ps = 0
+        ps2 = 1
+    else:
+        ps2 = ps
     while ps != ps2:
         ps = getpass(prompt='password \n(empty to generate):\n') # str
         if len(ps) == 0:
             ps = newrandompass()
+            if not ps:
+                return False
             ps2 = ps
         else:
             ps2 = getpass(prompt='once again the same please:\n')
@@ -302,7 +346,7 @@ def newpass(hashed): # hashed = str
     newline = site + '\t\t' + us + '\t\t' +ps # str
     newline = newline.encode('utf-8') # bytes
     already = readfileraw()
-    if not already:
+    if not already or startover:
         l = 0
     else:
         already = already.split('\n')
@@ -320,9 +364,79 @@ def newpass(hashed): # hashed = str
 #    print(len(newline))
 #    print(len(newline.decode('utf-8')))
 #    newline = base64(newline)
-    with open(filename,'a') as f:
+    if startover:
+        mode = 'w'
+    else:
+        mode = 'a'
+#    print(f'{startover},{mode}')
+#    input()
+    with open(filename,mode) as f:
         f.write(newline.decode('utf-8'))
         f.write('\n')
+
+def modify(hashed,delete=False):
+    # get all data from file
+    alldata = readfile(hashed,full=True,modify=True)
+    
+    sorteddata = []
+    sortedpasses = []
+    for i in alldata:
+        a = i.split('\t\t')
+        sorteddata.append([a[0],a[1]])
+        sortedpasses.append(a[2])
+    for x,y in zip(range(len(sorteddata)),sorteddata):
+        print(f'({x}) =  {y}')
+
+    if len(sorteddata) == 1 and delete:
+        last = input('only last site/user/password saved,delete it?\nenter or y:\n')
+        if len(last) == 0 or last.lower() == 'y':
+            newpass(hashed,startover=True)
+        return
+    c = None
+    if delete:
+        dd = "delete"
+    else:
+        dd = 'change'
+    while c == None:
+
+        c = input(f'which password you want to {dd}? (number):\n')
+        try:
+            c = int(c)
+            if c > ( len(sorteddata) +1) or c < 0:
+                print('only numbers 0 - {len(sorteddata) -1}!')
+                c = None
+                continue
+        except ValueError:
+            print('only numbers please')
+            c = None
+            continue
+        print(f'{sorteddata[c]}')
+        a = input('correct?  (enter or y)\nexit to abort\n')
+        if not (len(a) == 0 or a.lower() == 'y'):
+            if a.lower() == 'exit':
+                return
+            c = None
+    # c == index of password to change
+#    print(f'{sorteddata[c]}')
+#    c = int(c)
+#    print(f'{c} {type(c)}')
+#    input()
+#    return
+    start = True  # tell newpass to start over on first line
+
+    for n,x,y in zip(range(len(sorteddata)),sorteddata,sortedpasses):
+        if n != c:
+            a = x[0]
+            b = x[1]
+            newpass(hashed,[a,b,y],start)
+            start = False
+    if delete:
+        return
+    a = sorteddata[c][0]
+    b = sorteddata[c][1]
+#    password = 0 # newpass takes 'password = 0' as not generated yet
+    newpass(hashed,[a,b,0])
+
 
 def main():
     passw = getpass(prompt='main password:\n') # str
@@ -339,16 +453,21 @@ def main():
     while c != 0:
         try:
             c = int(input('\n(1) read passwd\n(2) add new passwd\n'+
-                    '(0) exit\n'))
+                    '(3) modify\n(4) delete\n(0) exit\n'))
         except:
             raise SystemExit
         if c == 2:
             newpass(hash2)
         elif c == 1:
             readfile(hash2,True)
+        elif c == 3:
+            modify(hash2)
+        elif c == 4:
+            modify(hash2,True)
         else:
-            print('exiting..')
             raise SystemExit
+
+    print('exiting..')
     return
 if __name__ == '__main__':
     main()
