@@ -112,7 +112,6 @@ def newrandompass():
         c = input('choose password you like (its number)\n or enter to generate again\n')
         if len(c) == 0:
             continue
-
         try:
             c = int(c)
         except ValueError:
@@ -182,7 +181,15 @@ def readfile(hashed,full=False): # hashed = str
     if not full:
         filelines = readfileraw()
         if not filelines:
-            return True
+            print('first run')
+            p = input('write your password again:\n')
+            p2 = p[::-1]
+            hash2 = hash_it(p2)
+            if hashed == hash2:
+                print('your master password stored')
+                return True
+            print('passwords doesn\'t match')
+            return False
         filelines = filelines.split('\n')
         key = base64.urlsafe_b64encode(hashed[:32].encode('utf-8'))
         token = filelines[0].encode('utf-8')
@@ -278,11 +285,20 @@ def newpass(hashed): # hashed = str
 #    print('keys:')
     for i in keys:
         print(i)
-    site = input('password to site (ex: facebook.com):\n') # str
-    us = input('username there?:\n')
-    ps = getpass(prompt='password there\n(empty to generate):\n') # str
-    if len(ps) == 0:
-        ps = newrandompass()
+    site = input('name of site (ex: facebook.com):\n') # str
+    us = input('username ?:\n')
+    ps = 0
+    ps2 = 1
+    while ps != ps2:
+        ps = getpass(prompt='password \n(empty to generate):\n') # str
+        if len(ps) == 0:
+            ps = newrandompass()
+            ps2 = ps
+        else:
+            ps2 = getpass(prompt='once again the same please:\n')
+        if ps != ps2:
+            print('new password doesn\'t match\ntry again')
+
     newline = site + '\t\t' + us + '\t\t' +ps # str
     newline = newline.encode('utf-8') # bytes
     already = readfileraw()
@@ -331,6 +347,7 @@ def main():
         elif c == 1:
             readfile(hash2,True)
         else:
+            print('exiting..')
             raise SystemExit
     return
 if __name__ == '__main__':
