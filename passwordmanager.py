@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # ask for password
 # hash sha512 it
 
@@ -73,7 +74,11 @@ def newrandompass():
         lenpass = 5
         while lenpass < 8:
             try:
-                lenpass = int(input('minimal length of password?\n(8 minumum:\n'))
+                lenpass = input('minimal length of password?\n(8 minumum:\n')
+                if len(lenpass) == 0:
+                    lenpass=8
+                else:
+                    lenpass = int(lenpass)
             except ValueError:
                 print("only digits please")
                 lenpass= 5
@@ -85,7 +90,11 @@ def newrandompass():
         lenmax = 5
         while lenmax < lenpass:
             try:
-                lenmax = int(input(f'maximal length of password?\n{lenpass} minumum\n'))
+                lenmax = input(f'maximal length of password?\n{lenpass} minumum\n')
+                if len(lenmax) == 0:
+                    lenmax = lenpass
+                else:
+                    lenmax = int(lenmax)
             except ValueError:
 
                 print("only digits please\n")
@@ -134,6 +143,7 @@ def validatepass(passw,lists):
         for a in i:
             if a in passw:
                 init = True
+                break
         if not init:
             return False
     return True
