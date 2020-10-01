@@ -401,11 +401,12 @@ def uncode(hashed,lines,returnlines = False): # str , [str,str,str,...]
                 raise SystemExit
             if not returnlines:
                 #rrrr.append(raw)
-                if raw.startswith('https://www.humblebundle.com/'):
-                    print(count,raw.split('\t')[0])
-                else:
-                    print(count,raw)
-                count+=1
+            #    if raw.startswith('https://www.humblebundle.com/'):
+            #        print(count,raw.split('\t')[0])
+            #   else:
+            #       print(count,raw)
+                print(raw)
+            #   count+=1
                 #input()
             else:
                 ll.append(raw)

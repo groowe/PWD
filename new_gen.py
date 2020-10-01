@@ -755,7 +755,7 @@ class MyWindow(Gtk.Window):
                 self.entry_username.set_text('')
                 self.entry_password.set_text('')
                 self.entry_page.set_text('')
-print('TBD : ensure used password gets deleteted from list of generated passwords')
+print('TBD : ensure used password gets deleted from list of generated passwords')
 print("""TBD : behaviour of generate password on 'edit' page
     (currently password needs to be set to editable
     for 'use password' to copy it directly to it)""")
