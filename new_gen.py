@@ -14,7 +14,10 @@ class MyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self,title="password manager")
         self.connect("destroy",Gtk.main_quit)
-        self.set_icon_from_file('tux4.png')
+        try: # no need to crash because of stupid icon
+            self.set_icon_from_file('tux4.png')
+        except:
+            print('elegant icon (tux4.png) not found')
         self.set_size_request(200,100)
         self.set_border_width(3)
         self.hashed = ''
