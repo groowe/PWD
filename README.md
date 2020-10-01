@@ -2,11 +2,11 @@
 #<h1> python3 password manager</h1>
 simple password manager written in python<br>
 
+you provide it with your own main password once<br>
 all passwords are crypted in 'safepasswords' file<br>
 if deleted,program starts fresh<br>
 
 <b>passwordmanager.py in terminal only</b><br>
-you provide it with your own main password once<br>
 
 <h2>Gtk gui is from new_gen.py</h2>
 it needs pwtools.py as dependency<br>
