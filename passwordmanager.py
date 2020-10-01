@@ -7,20 +7,58 @@ from getpass import getpass # for hidden input
 import base64
 from cryptography.fernet import Fernet
 import random # for random gen pass
+from string import punctuation
+from string import digits,ascii_lowercase,ascii_uppercase
+def extrachars():
+    """
+    unicodes of seriously special chars
+    upside: this makes passwords basically
+            immune for brute-force
+    downside: majority of those chars are
+            on some sites (like google)
+            invalid... so unusable
+    """
+    b = range(0x2801,0x2900)
+    c = range(0x11044,0x110a8)
+    d = range(0x10cc0, 0x10d24)
+    e = range(0x10b30, 0x10b94)
+    f = range(0x1093c, 0x109a0 )
+    g = range(0x10a68 ,0x10f18)
+    h = range(0x10360 ,0x10a04)
+    i = range(0xfb2c,0x102fc)
+    j = range(0xa7f8 ,0xfa64)
+    k = range(0x2e7c ,0xa794)
+    l = range(0x2c24 , 0x2e18)
+    m = range(0x2aea ,0x2bc0)
+    n = range(0x283c , 0x2968)
+    o = range(0x2328 ,0x26ac)
+    r = [b,c,d,e,f,g,h,i,j,k,l,m,n,o]
+    allch= []
+    for ia in r:
+        allch.extend([chr(i) for i in ia
+            if chr(i).isprintable() # only printable chars
+            if not chr(i).isascii() # ascii is in another list
+            if not chr(i).isspace()]) # spaces are usually not permitted
+    allch=list(set(allch))
+    return ''.join(allch)
 
 
 def newrandompass():
-    low = "abcdefghijklmnopqrstuvwxyz"
-    high = low.upper()
-    digits = "0123456789"
-    specials ="!@#$%^&*()?"
+    """ manages creating new password """
+    low = ascii_lowercase
+    high = ascii_uppercase
+#    digits = digits
+    specials = punctuation
+    hebrew = ''.join([chr(letter) for letter in range(0x5d0,0x5eb)])+extrachars()
+
     print('ok, generating password')
     print('what kind of password you want?')
-    print(f'low = {low}\nhigh ={high}\ndigits = {digits}\nspecials = {specials}')
+    print(f'low = {low}\nhigh ={high}\ndigits = {digits}\nspecials = {specials}\nhebrew = {hebrew[:10]}')
     lowuse = True
     highuse = True
     digitsuse = True
     specialsuse = True
+    hebrewuse = True
     print('default = use all')
     q = None
     while q == None:
@@ -35,6 +73,8 @@ def newrandompass():
                 lowuse = False
             if 'special' in q2.lower():
                 specialsuse = False
+            if 'hebrew' in q2.lower():
+                hebrewuse = False
             inuse = ''
             if lowuse:
                 inuse += f'{low}\n'
@@ -44,12 +84,15 @@ def newrandompass():
                 inuse += f'{digits}\n'
             if specialsuse:
                 inuse += f'{specials}\n'
+            if hebrewuse:
+                inuse += f'{hebrew}\n'
             if len(inuse) == 0:
                 print('you have to use some characters :)\nplease try again\n')
                 digitsuse = True
                 highuse = True
                 lowuse = True
                 specialsuse = True
+                hebrewuse = True
                 q = None
                 continue
         elif (q.lower() != 'y' and len(q) != 0):
@@ -70,7 +113,15 @@ def newrandompass():
         if specialsuse:
             usechars += specials
             lists.append(specials)
-        print(f'chars to use:\n{usechars}')
+        if hebrewuse:
+            usechars += hebrew
+            lists.append(hebrew)
+        if len(usechars) > 100:
+            print(f'chars to use:\n{usechars[:100]}')
+        else:
+
+            print(f'chars to use:\n{usechars}')
+        print(f'base {len(usechars)}')
         lenpass = 5
         while lenpass < 8:
             try:
@@ -96,18 +147,19 @@ def newrandompass():
                 else:
                     lenmax = int(lenmax)
             except ValueError:
-
                 print("only digits please\n")
                 lenmax = 5
                 continue
             if lenmax < lenpass:
                 print(f'setting fixed length {lenpass}\n')
                 lenmax = lenpass
-
         print('recap')
         print(f'minimal length of password = {lenpass}')
         print(f'maximal length of password = {lenmax}')
-        print(f'password chars to choose from:\n{usechars}')
+        if len(usechars) > 100:
+            print(f'password chars to choose from:\n{usechars[:100]}')
+        else:
+            print(f'password chars to choose from:\n{usechars}')
         qq = input('{Enter} to continue, anything else to start again\n')
         if len(qq) != 0:
             q = None
@@ -138,6 +190,7 @@ def newrandompass():
     return passw
 
 def validatepass(passw,lists):
+    """check if chars from all lists are used"""
     for i in lists:
         init = False
         for a in i:
@@ -148,13 +201,22 @@ def validatepass(passw,lists):
             return False
     return True
 
-def genpass(chars,lists,minlen,maxlen):
+def genpass_old(chars,lists,minlen,maxlen):
+    """
+    not used now
+    was ok,but then one of lists got
+    multiple times longer than others
+    (extra chars)
+    and this never generated a thing
+
+    """
     # chars to choose from
     # lists needed to be used from
 
     # generate 10 passwords:
     passwords = []
     while len(passwords) < 10:
+#        print('*',end='')
         passw = ""
         if minlen < maxlen:
             passlen = random.randint(minlen,maxlen)
@@ -164,6 +226,71 @@ def genpass(chars,lists,minlen,maxlen):
             passw+= chars[random.randint(0,len(chars)-1)]
         if validatepass(passw,lists):
             passwords.append(passw)
+#            print('\n',len(passwords))
+    return passwords
+
+
+def genpass(chars,lists,minlen,maxlen):
+    """
+    function for generating safe passwords
+    chars = string of all chars to use
+    lists = list of strings to use
+    minlen = minimal length of password
+    maxlen = maximal -//-
+    """
+    # chars to choose from
+    # lists needed to be used from
+
+    # generate 10 passwords:
+    passwords = []
+    while len(passwords) < 10:
+#        print('*',end='')
+        passw = ""
+        if minlen < maxlen:
+            # pick length of password randomly
+            passlen = random.randint(minlen,maxlen)
+        else:
+            passlen = minlen
+        if len(lists) > 1:
+            # this is update of older version!
+            # make all lists same length
+#               old way:
+#            targetchoices = passlen*2
+#            if targetchoices  < 3:
+#                targetchoices = 3
+#            choice = ''
+#            for c in lists:
+#                for i in range(targetchoices):
+#                    choice += random.choice(c)
+#                new way:
+            choice = ''
+            for c in lists:
+                if len(c) > passlen:
+                    choice += ''.join(random.sample(c,passlen))
+                elif len(c) == passlen:
+                    choice += c
+                else:
+                    done = 0
+                    while passlen - done > len(c):
+                        choice += c
+                        done+=len(c)
+                    choice += ''.join(random.sample(c,passlen-done))
+            # no matter how much longer
+            # one list is than others,
+            # after this
+            # every list is same length
+            # (selected random chars are..)
+
+        elif len(lists) == 1:
+            choice = chars
+
+        while len(passw) < passlen:
+            chosen_char = choice[random.randint(0,len(choice)-1)]
+            passw+= chosen_char
+            choice = choice.replace(chosen_char,'')+chosen_char
+        if validatepass(passw,lists):
+            passwords.append(passw)
+#            print('\n',len(passwords))
     return passwords
 
 filename = 'safepasswords'
@@ -174,6 +301,7 @@ def hash_it(mainpassword): # mainpassword= str
 #                       .encode  = > bytes
 
 def readfileraw():
+    """ reading plain file with stored info """
     try:
         with open(filename,'r') as f:
             a = f.read()
@@ -188,6 +316,14 @@ def readfileraw():
     return a # string
 
 def readfile(hashed,full=False,modify=False): # hashed = str
+    """
+
+    hashed = hashed password
+    full : True = read whole file
+           False = just check if password matches
+    modify : False = read
+             True = write
+    """
     if not full:
         filelines = readfileraw()
         if not filelines:
@@ -225,6 +361,9 @@ def readfile(hashed,full=False,modify=False): # hashed = str
 
 
 def uncode(hashed,lines,returnlines = False): # str , [str,str,str,...]
+    """
+    decode lines with hashed
+    """
     if type(hashed) == str:
         hashed = hashed.encode('utf-8')
     keys= []
@@ -239,70 +378,60 @@ def uncode(hashed,lines,returnlines = False): # str , [str,str,str,...]
 #        print(key)
     if not lines:
         return
-#    print(hashed)
-#    hashed= base64.urlsafe_b64encode(hashed)
-#    print(lines) 
-#    print(type(lines))
     if type(lines) == str:
         lines = lines.split('\n')
-#        key = keys[0]
-#        raw = decrypt(key,lines.encode('utf-8'))
-#        print(f'raw = {raw}')
-#        print(f'lines now {type(lines)}')
     for l in lines:
         if len(l) < 4:
             lines.pop(lines.index(l))
-#    for i in range(0,len(lines),-1):
-#        if len(lines[i]) < 4:
-#            lines.remove(lines[i])
-#    print(f'len lines = {len(lines)}')
-#    print(f'lines = {lines}')
-#    print(lines) 
-#    print(type(lines))
     if type(lines) == list:
         print('site / username / password')
         if returnlines:
             ll = []
+        count = 0
+        #rrrr = []
         for line in lines:
             k = lines.index(line) % 4
             key = keys[k]
-#            print(lines[i])
-#            print(len(lines[i]))
             raw = decrypt(key,line.encode('utf-8'))
-#            print('raw')
             try:
-
                 raw = raw.decode('utf-8')
             except AttributeError as exception: # should never happen
+                # if this happens, file has been modified
                 print(f'error in logic (uncode function)\n{exception}')
                 raise SystemExit
-
             if not returnlines:
-                print(f'{raw}')
+                #rrrr.append(raw)
+                if raw.startswith('https://www.humblebundle.com/'):
+                    print(count,raw.split('\t')[0])
+                else:
+                    print(count,raw)
+                count+=1
+                #input()
             else:
                 ll.append(raw)
         if returnlines:
             return ll
-
+        #with open('rrrr','w') as f:
+        #    for item in rrrr:
+        #        f.write(item + '\n\n')
     else:
         print(type(lines))
 
 def decrypt(key,token):
-#    token = base64.decode(token,'utf-8')
-#    if type(token) != bytes:
-#        token = bytes(token,'utf-8')
+    """just decrypt token with Fernet key"""
     f = Fernet(key)
-#    print(f'token {token}')
-#    print(f'len token = {len(token)}')
-#    print(f'key {key}')
-#    print(f'len key = {len(key)}')
     try:
         a = f.decrypt(token)
     except:
         return False
     return f.decrypt(token)
 
-def newpass(hashed,siteusps=None,startover= False): # hashed = str , siteusps =  [site , us , ps ] , startover = wipe first
+def newpass(hashed,siteusps=None,startover= False):
+    """
+    hashed = str
+    siteusps =  [site , us , ps ]
+    startover = wipe first
+    """
 #    hashed = base64.urlsafe_b64encode(hashed)
     if type(hashed) == str:
         hashed = hashed.encode('utf-8')
@@ -311,11 +440,6 @@ def newpass(hashed,siteusps=None,startover= False): # hashed = str , siteusps = 
         key = base64.urlsafe_b64encode(hashed[:32])
         hashed = hashed[32:]
         keys.append(key)
-#    print('keys:')
-##### for debug :
-#    for i in keys:
-#        print(i)
-################
     ps = 0
     if siteusps != None:
         try:
@@ -370,10 +494,6 @@ def newpass(hashed,siteusps=None,startover= False): # hashed = str , siteusps = 
 #        l = 0
     F = Fernet(keys[l])
     newline = F.encrypt(newline)
-#    print(newline)
-#    print(len(newline))
-#    print(len(newline.decode('utf-8')))
-#    newline = base64(newline)
     if startover:
         mode = 'w'
     else:
@@ -387,7 +507,7 @@ def newpass(hashed,siteusps=None,startover= False): # hashed = str , siteusps = 
 def modify(hashed,delete=False):
     # get all data from file
     alldata = readfile(hashed,full=True,modify=True)
-    
+
     sorteddata = []
     sortedpasses = []
     for i in alldata:
@@ -426,34 +546,73 @@ def modify(hashed,delete=False):
             if a.lower() == 'exit':
                 return
             c = None
-    # c == index of password to change
-#    print(f'{sorteddata[c]}')
-#    c = int(c)
-#    print(f'{c} {type(c)}')
-#    input()
-#    return
-    start = True  # tell newpass to start over on first line
+#    start = True  # tell newpass to start over on first line
+#
+#    for n,x,y in zip(range(len(sorteddata)),sorteddata,sortedpasses):
+#        if n != c:
+#            a = x[0]
+#            b = x[1]
+#            newpass(hashed,[a,b,y],start)
+#            start = False
 
+#    password = 0 # newpass takes 'password = 0' as not generated yet
+    start = True
+    if not delete:
+        a = sorteddata[c][0]
+        b = sorteddata[c][1]
+        newpass(hashed,[a,b,0],True)
+        start = False
     for n,x,y in zip(range(len(sorteddata)),sorteddata,sortedpasses):
         if n != c:
             a = x[0]
             b = x[1]
             newpass(hashed,[a,b,y],start)
-            start = False
-    if delete:
-        return
-    a = sorteddata[c][0]
-    b = sorteddata[c][1]
-#    password = 0 # newpass takes 'password = 0' as not generated yet
-    newpass(hashed,[a,b,0])
-
+            if start == True:
+                start = False
 
 def main():
+    # read password
     passw = getpass(prompt='main password:\n') # str
-#    hashed = hash_it(passw)#.decode('utf-8') # bytes .decode => str
+    # reverse
     passw2 = passw[::-1]
+    # hash
     hash2 = hash_it(passw2)#.decode('utf-8') # bytes .decode => str
-    # check if passw is correct:
+    # check if correct:
+    check = readfile(hash2,False)
+    if not check:
+        print('wrong password!')
+        raise SystemExit
+
+    c = 5
+    while c != 0:
+        try:
+            c = int(input('\n(1) read passwd\n(2) add new passwd\n'+
+                    '(3) modify\n(4) delete\n(0) exit\n'))
+        except:
+            raise SystemExit
+        if c == 2:
+            newpass(hash2)
+        elif c == 1:
+            readfile(hash2,True)
+        elif c == 3:
+            modify(hash2)
+        elif c == 4:
+            modify(hash2,True)
+        else:
+            raise SystemExit
+
+    print('exiting..')
+    return
+
+
+def main_():
+    # read password
+    passw = getpass(prompt='main password:\n') # str
+    # reverse
+    passw2 = passw[::-1]
+    # hash
+    hash2 = hash_it(passw2)#.decode('utf-8') # bytes .decode => str
+    # check if correct:
     check = readfile(hash2,False)
     if not check:
         print('wrong password!')
@@ -480,6 +639,4 @@ def main():
     print('exiting..')
     return
 if __name__ == '__main__':
-    main()
-
-
+    main_()
