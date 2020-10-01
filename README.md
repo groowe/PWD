@@ -15,6 +15,6 @@ it needs pwtools.py as dependency<br>
 <h2><b>abilities:</h2><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; show stored passwords<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; add new site/user/password<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; modify/delete existing passwords</b><br>
-
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; modify/delete existing passwords<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; generate secure passwords</b><br>
 
