@@ -248,7 +248,7 @@ class MyWindow(Gtk.Window):
         self.minlen = Gtk.SpinButton()
         self.minlen.set_numeric(True) # only numbers
         self.minlen.set_update_policy(Gtk.SpinButtonUpdatePolicy.IF_VALID)
-        self.minlen.set_adjustment(Gtk.Adjustment(lower=3,upper=50,step_increment=1,page_increment=10))
+        self.minlen.set_adjustment(Gtk.Adjustment(lower=5,upper=50,step_increment=1,page_increment=10))
         self.minlen.set_value(10)
         self.minlen.connect('changed',self.on_min_change)
         label_minlen = Gtk.Label(label='minimal length')
@@ -257,7 +257,7 @@ class MyWindow(Gtk.Window):
         # max length of password
         self.maxlen = Gtk.SpinButton()
         self.maxlen.set_numeric(True)
-        self.maxlen.set_adjustment(Gtk.Adjustment(lower=3,upper=50,step_increment=1,page_increment=10))
+        self.maxlen.set_adjustment(Gtk.Adjustment(lower=5,upper=50,step_increment=1,page_increment=10))
         self.maxlen.set_update_policy(Gtk.SpinButtonUpdatePolicy.IF_VALID)
         self.maxlen.set_value(20)
         self.maxlen.connect('changed',self.on_max_change)
