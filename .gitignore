@@ -1,0 +1,4 @@
+# ignore an actual file with crypted passwords
+safepasswords
+# one file I use sometimes
+acc

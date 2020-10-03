@@ -767,7 +767,10 @@ print("""TBD : behaviour of generate password on 'edit' page
     (currently password needs to be set to editable
     for 'use password' to copy it directly to it)""")
 print("testing")
-print("""TBD : color theme change
+print("""TBD : color theme change ; maybe through css
+""")
+print("""
+trying commit with atom
 """)
 
 win = MyWindow()
