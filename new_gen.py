@@ -8,16 +8,15 @@ from gi.repository import Gtk, GLib,Gdk
 
 from pwtools import validate_password,uncode,newpass
 from pwtools import newrandompass
-#from pwtools import validate_password_try as validate_password
 
 class MyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self,title="password manager")
         self.connect("destroy",Gtk.main_quit)
-        try: # no need to crash because of stupid icon
+        try: # no need to crash because of missing icon
             self.set_icon_from_file('tux4.png')
         except:
-            print('elegant icon (tux4.png) not found')
+            print('icon (tux4.png) not found')
         self.set_size_request(200,100)
         self.set_border_width(3)
         self.hashed = ''
@@ -177,8 +176,11 @@ class MyWindow(Gtk.Window):
                 if self.generate_for == 0: # add password page
                     self.entry_password.set_text(passtouse)
                 if self.generate_for == 2: # edit password page
-                    if self.edit_password.get_editable():
-                        self.edit_password.set_text(passtouse)
+                    # maybe not desirable behaviour
+                    #if self.edit_password.get_editable():
+                        # checks if password entry is editable
+                    #    self.edit_password.set_text(passtouse)
+                    self.edit_password.set_text(passtouse)
 
                 self.passpage.set_current_page(self.generate_for)
                 self.generate_for = None
@@ -332,10 +334,6 @@ class MyWindow(Gtk.Window):
         extra = self.use_extra.get_active()
         minlen = self.minlen.get_value_as_int()
         maxlen = self.maxlen.get_value_as_int()
-        #self.security_of_password()
-        #print(f"{minlen=},{maxlen=}")
-        #print(f"{self.minlen=}\n{self.minlen.get_digits()=}")
-        #print(f"{self.minlen.get_value_as_int()=}")
 
         if lower+upper+digits+specials+extra:
             # at least one has to be true
@@ -425,9 +423,7 @@ class MyWindow(Gtk.Window):
         self.edit_site.set_editable(False)
         self.edit_site.set_can_focus(False)
 
-
         self.edit_site.set_alignment(0.5) # center
-        #print(f"{dir(self.edit_site.get_style())=}")
         self.siteshows.append(self.edit_site)
 
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=3)
@@ -470,7 +466,6 @@ class MyWindow(Gtk.Window):
         hbox.pack_start(self.edit_password,True,True,0)
         hbox.pack_start(button,False,False,0)
         self.modify_password_page.pack_start(hbox,True,True,0)
-
 
     def save_modified(self,widget,action):
         """
@@ -688,12 +683,7 @@ class MyWindow(Gtk.Window):
                 site = model[iter][0]
                 username = model[iter][1]
                 password = model[iter][2]
-                #print(f'{site=}\n{username=}\n{password=}')
 
-        # finally assign values
-        #print(f"{self.siteshows=}\n{len(self.siteshows)=}")
-        #print(f"{self.usershows=}\n{len(self.usershows)=}")
-        #print(f"{self.passshows=}\n{len(self.passshows)=}")
         self.set_not_editable()
         for siteiter in self.siteshows:
             siteiter.set_text(site)
@@ -763,10 +753,9 @@ class MyWindow(Gtk.Window):
                 self.entry_page.set_text('')
                 self.data_refresh()
 
-print("""TBD : behaviour of generate password on 'edit' page
-    (currently password needs to be set to editable
-    for 'use password' to copy it directly to it)""")
-print("testing")
+print("""TBD : color theme change ; maybe through css
+""")
+
 win = MyWindow()
 win.show_all()
 Gtk.main()
