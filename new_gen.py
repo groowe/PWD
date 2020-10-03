@@ -190,23 +190,50 @@ class MyWindow(Gtk.Window):
         then recode file with new passowrd
         """
         self.change_pass_page = Gtk.Grid()
-        label = Gtk.Label(label="<b>change main password : </b>",use_markup=True)
+        label = Gtk.Label(label="<b>change master password : </b>",use_markup=True)
         label.set_justify(Gtk.Justification.FILL)
         self.change_pass_page.attach(label,0,0,4,1)
         label = Gtk.Label(label="old password: ")
         self.change_pass_page.attach(label,0,1,1,1)
         self.old_pass = Gtk.Entry()
+        self.old_pass.set_visibility(False)
         self.change_pass_page.attach(self.old_pass,1,1,1,1)
+        hide = Gtk.CheckButton(label='hide')
+        hide.set_active(True)
+        hide.connect('toggled',self.hide_master_pasword,self.old_pass)
+        self.change_pass_page.attach(hide,2,1,1,1)
+
         label = Gtk.Label(label="new password: ")
         self.change_pass_page.attach(label,0,2,1,1)
         self.new_pass = Gtk.Entry()
+        self.new_pass.set_visibility(False)
         self.change_pass_page.attach(self.new_pass,1,2,1,1)
+        hide = Gtk.CheckButton(label='hide')
+        hide.set_active(True)
+        hide.connect('toggled',self.hide_master_pasword,self.new_pass)
+        self.change_pass_page.attach(hide,2,2,1,1)
         label = Gtk.Label(label="new password: ")
         self.change_pass_page.attach(label,0,3,1,1)
-        self.new_pass = Gtk.Entry()
-        self.change_pass_page.attach(self.new_pass,1,3,1,1)
+        self.new_pass_2 = Gtk.Entry()
+        self.new_pass_2.set_visibility(False)
+        self.change_pass_page.attach(self.new_pass_2,1,3,1,1)
+        hide = Gtk.CheckButton(label='hide')
+        hide.set_active(True)
+        hide.connect('toggled',self.hide_master_pasword,self.new_pass_2)
+        self.change_pass_page.attach(hide,2,3,1,1)
         change = Gtk.Button(label='change')
+        change.connect('clicked',self.change_master_password)
         self.change_pass_page.attach(change,0,4,4,1)
+        return
+
+    def hide_master_pasword(self,widget,entry):
+        entry.set_visibility(not widget.get_active())
+
+    def change_master_password(self,widget):
+        old = self.old_pass.get_text()
+        new = self.new_pass.get_text()
+        new2 = self.new_pass_2.get_text()
+        print(f"{old=},{new=},{new2=}")
         return
 
     def use_generated_password(self,widget):
