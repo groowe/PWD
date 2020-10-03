@@ -755,6 +755,8 @@ class MyWindow(Gtk.Window):
                 self.entry_page.set_text('')
                 self.data_refresh()
 
+print("""TBD : ability to change main password
+""")
 print("""TBD : color theme change ; maybe through css
 """)
 
