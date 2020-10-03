@@ -769,9 +769,7 @@ print("""TBD : behaviour of generate password on 'edit' page
 print("testing")
 print("""TBD : color theme change ; maybe through css
 """)
-print("""
-trying commit with atom
-""")
+
 
 win = MyWindow()
 win.show_all()
