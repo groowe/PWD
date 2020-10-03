@@ -51,6 +51,8 @@ class MyWindow(Gtk.Window):
                 screen,self.provider,
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
+        latticed = ",".join(["#262626","#626262"]*40)
+
         css = """
         * { font-size : 20px;
             background : #000000;
@@ -97,12 +99,11 @@ class MyWindow(Gtk.Window):
         }
         #nowentry {
             background-image: linear-gradient(#606060,#060606);
-        }
-        #noentry {
-            background-image: linear-gradient(#262626,#626262);
+            }
+            """
 
-        }
-            """.encode()
+        css = css.encode()
+        css += f"#noentry {{ background-image: linear-gradient({latticed});}}".encode()
             # window { background : white;}
         self.provider.load_from_data(css)
         #print(f"{self.provider.list_properties()=}")
