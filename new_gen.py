@@ -319,7 +319,6 @@ class MyWindow(Gtk.Window):
             self.minlen.set_range(x,x+50)
             self.maxlen.set_range(x,x+50)
 
-
     def generate(self,widget):
         """
         collects info about settings
@@ -664,8 +663,15 @@ class MyWindow(Gtk.Window):
         self.set_not_editable() # edit entries
 
         for data in self.data:
-            #splitter = "\t\t"
-            self.data_store.append(data.split('\t\t'))
+            site_user_pass = data.split('\t\t')
+            self.data_store.append(site_user_pass)
+            # prevent using same password twice
+            if (p:=site_user_pass[-1]) in self.list_of_passwords:
+                self.list_of_passwords.remove(p)
+                self.selected_password.set_range(0,len(self.list_of_passwords)-1)
+
+        if self.data:
+            del site_user_pass
         self.display('')
         return
 
@@ -755,7 +761,8 @@ class MyWindow(Gtk.Window):
                 self.entry_username.set_text('')
                 self.entry_password.set_text('')
                 self.entry_page.set_text('')
-print('TBD : ensure used password gets deleted from list of generated passwords')
+                self.data_refresh()
+
 print("""TBD : behaviour of generate password on 'edit' page
     (currently password needs to be set to editable
     for 'use password' to copy it directly to it)""")
