@@ -176,10 +176,7 @@ class MyWindow(Gtk.Window):
                 if self.generate_for == 0: # add password page
                     self.entry_password.set_text(passtouse)
                 if self.generate_for == 2: # edit password page
-                    # maybe not desirable behaviour
-                    #if self.edit_password.get_editable():
-                        # checks if password entry is editable
-                    #    self.edit_password.set_text(passtouse)
+
                     self.edit_password.set_text(passtouse)
 
                 self.passpage.set_current_page(self.generate_for)
