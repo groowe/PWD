@@ -180,7 +180,9 @@ class MyWindow(Gtk.Window):
                 if self.generate_for == 0: # add password page
                     self.entry_password.set_text(passtouse)
                 if self.generate_for == 2: # edit password page
-                    self.edit_password.set_text(passtouse)
+                    # no point if nothing is selected
+                    if self.site_select_for_edit.get_active_iter() is not None:
+                        self.edit_password.set_text(passtouse)
 
                 self.passpage.set_current_page(self.generate_for)
                 self.generate_for = None
@@ -752,8 +754,6 @@ class MyWindow(Gtk.Window):
                 self.entry_page.set_text('')
                 self.data_refresh()
 
-print(""" TBD : use password on edit only if something is selected
-""")
 print("""TBD : color theme change ; maybe through css
 """)
 
