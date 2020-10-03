@@ -143,7 +143,7 @@ class MyWindow(Gtk.Window):
 
     def pass_page(self):
         """
-        setting up password page
+        setting up pages with all usual operations
         """
         self.passpage = Gtk.Notebook()
         # page labels on left side:
@@ -168,6 +168,46 @@ class MyWindow(Gtk.Window):
         self.generate_for = None #
         self.manage_generate()
         self.passpage.append_page(self.generate_password_page,Gtk.Label(label="generate"))
+
+        self.manage_settings()
+        self.passpage.append_page(self.settings_page,Gtk.Label(label="settings"))
+
+    def manage_settings(self):
+        """
+        setting notebook of pages
+        """
+        self.settings_page =  Gtk.Notebook()
+
+        self.manage_change_password()
+        self.settings_page.append_page(self.change_pass_page,Gtk.Label(label="change password"))
+        return
+
+    def manage_change_password(self):
+        """
+        page for changing main password
+        classically should have entered 1x old password
+        and 2x new password
+        then recode file with new passowrd
+        """
+        self.change_pass_page = Gtk.Grid()
+        label = Gtk.Label(label="<b>change main password : </b>",use_markup=True)
+        label.set_justify(Gtk.Justification.FILL)
+        self.change_pass_page.attach(label,0,0,4,1)
+        label = Gtk.Label(label="old password: ")
+        self.change_pass_page.attach(label,0,1,1,1)
+        self.old_pass = Gtk.Entry()
+        self.change_pass_page.attach(self.old_pass,1,1,1,1)
+        label = Gtk.Label(label="new password: ")
+        self.change_pass_page.attach(label,0,2,1,1)
+        self.new_pass = Gtk.Entry()
+        self.change_pass_page.attach(self.new_pass,1,2,1,1)
+        label = Gtk.Label(label="new password: ")
+        self.change_pass_page.attach(label,0,3,1,1)
+        self.new_pass = Gtk.Entry()
+        self.change_pass_page.attach(self.new_pass,1,3,1,1)
+        change = Gtk.Button(label='change')
+        self.change_pass_page.attach(change,0,4,4,1)
+        return
 
     def use_generated_password(self,widget):
         self.use_pass.set_label(f"{'copy' if self.generate_for is None else 'use'} pass")
