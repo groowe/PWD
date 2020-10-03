@@ -58,7 +58,7 @@ class MyWindow(Gtk.Window):
             color : grey;
                     }
         *:disabled {
-            background-color: #808080;
+            background-color: #8A8A8A;
                 }
         label:focus {
             background-color: #b4940f;
@@ -97,6 +97,10 @@ class MyWindow(Gtk.Window):
         }
         #nowentry {
             background-image: linear-gradient(#606060,#060606);
+        }
+        #noentry {
+            background-image: linear-gradient(#262626,#626262);
+
         }
             """.encode()
             # window { background : white;}
@@ -176,7 +180,6 @@ class MyWindow(Gtk.Window):
                 if self.generate_for == 0: # add password page
                     self.entry_password.set_text(passtouse)
                 if self.generate_for == 2: # edit password page
-
                     self.edit_password.set_text(passtouse)
 
                 self.passpage.set_current_page(self.generate_for)
@@ -241,8 +244,6 @@ class MyWindow(Gtk.Window):
         self.enforce_secure.connect('toggled',self.security_of_password)
         self.generate_password_page.attach(self.enforce_secure,1,5,1,1)
 
-        #adjustment = Gtk.Adjustment(lower=8,upper=300,step_increment=1,page_increment=10)
-        #policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
         # min length of password
         self.minlen = Gtk.SpinButton()
         self.minlen.set_numeric(True) # only numbers
@@ -419,8 +420,8 @@ class MyWindow(Gtk.Window):
         self.edit_site = Gtk.Entry()
         self.edit_site.set_editable(False)
         self.edit_site.set_can_focus(False)
-
         self.edit_site.set_alignment(0.5) # center
+        self.edit_site.set_name("noentry")
         self.siteshows.append(self.edit_site)
 
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=3)
@@ -437,8 +438,8 @@ class MyWindow(Gtk.Window):
         self.edit_username = Gtk.Entry()
         self.edit_username.set_editable(False)
         self.edit_username.set_can_focus(False)
-
         self.edit_username.set_alignment(0.5) # center
+        self.edit_username.set_name("noentry")
         self.usershows.append(self.edit_username)
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,spacing=3)
         hbox.pack_start(savebutton,False,False,0)
@@ -453,6 +454,7 @@ class MyWindow(Gtk.Window):
         self.edit_password.set_editable(False)
         self.edit_password.set_can_focus(False)
         self.edit_password.set_alignment(0.5) # center
+        self.edit_password.set_name("noentry")
         self.passshows.append(self.edit_password)
         button = Gtk.Button(label=f"{'generate':^10}")
         button.connect("clicked",self.button_generate)
@@ -750,6 +752,8 @@ class MyWindow(Gtk.Window):
                 self.entry_page.set_text('')
                 self.data_refresh()
 
+print(""" TBD : use password on edit only if something is selected
+""")
 print("""TBD : color theme change ; maybe through css
 """)
 
