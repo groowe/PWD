@@ -7,7 +7,7 @@ gi.require_version("Gtk","3.0")
 from gi.repository import Gtk, GLib,Gdk
 
 from pwtools import validate_password,uncode,newpass
-from pwtools import newrandompass
+from pwtools import newrandompass,hash_it
 
 class MyWindow(Gtk.Window):
     def __init__(self):
@@ -259,9 +259,10 @@ class MyWindow(Gtk.Window):
         warning = "gtk-dialog-warning" # "emblem-warning" "dialog-error"
         empty = "emblem-question"
         entries = [self.old_pass,self.new_pass,self.new_pass_2]
+        oldtext = self.old_pass.get_text()
         for entry,icon in zip(entries,self.icons):
             #print(entry is self.old_pass)
-            if not (text:=entry.get_text()):
+            if not entry.get_text():
                 icon.set_icon_name(empty)
             else:
                 if entry is self.old_pass:
@@ -271,7 +272,7 @@ class MyWindow(Gtk.Window):
                     text1 = self.new_pass.get_text()
                     text2 = self.new_pass_2.get_text()
                     if (text1 and text2):
-                        if (text1 == text2):
+                        if (text1 == text2 != oldtext):
                             icon.set_icon_name(ok)
                         else:
                             icon.set_icon_name(ng)
@@ -282,12 +283,36 @@ class MyWindow(Gtk.Window):
         entry.set_visibility(not widget.get_active())
 
     def change_master_password(self,widget):
+        """
+        everyting needed for change master password
+        """
         self.set_icons()
         old = self.old_pass.get_text()
         new = self.new_pass.get_text()
         new2 = self.new_pass_2.get_text()
-        print(f"{old=},{new=},{new2=}")
-        # icon for OK : emblem-checked
+        #print(f"{old=},{new=},{new2=}")
+        if validate_password(old): # correct old password
+            if new and new2:       # new password is not empty
+                if new == new2 != old:   # both are the same and not old password
+                    # now is the time to change main password
+                    # print("CORRECT")
+                    # update self.hashed
+                    self.hashed = hash_it(new[::-1])
+                    #print("hashed changed")
+                    # save all passwords with new hash
+                    add = False
+                    for record in self.data:
+                        #print(add)
+                        newpass(self.hashed,record,add)
+                        if not add:
+                            add = True
+                    #print("data writed")
+                    # read them from file
+                    self.data_refresh()
+                    #print("data refreshed")
+        self.old_pass.set_text('')
+        self.new_pass.set_text('')
+        self.new_pass_2.set_text('')
         return
 
     def use_generated_password(self,widget):
