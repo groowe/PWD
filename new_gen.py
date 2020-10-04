@@ -203,12 +203,14 @@ class MyWindow(Gtk.Window):
         self.change_pass_page.attach(self.old_pass,1,1,1,1)
         hide = Gtk.CheckButton(label='hide')
         hide.set_active(True)
+        hide.set_can_focus(False)
         hide.connect('toggled',self.hide_master_pasword,self.old_pass)
         self.change_pass_page.attach(hide,2,1,1,1)
         checkbutton = Gtk.ToolButton()
         checkbutton.set_icon_name("edit-insert")
         checkbutton.set_expand(True)
-        checkbutton.set_is_important(True)
+        #checkbutton.set_is_important(True)
+        checkbutton.set_can_focus(False)
         self.icons = [checkbutton]
         self.change_pass_page.attach(checkbutton,3,1,1,1)
 
@@ -220,11 +222,13 @@ class MyWindow(Gtk.Window):
         self.change_pass_page.attach(self.new_pass,1,2,1,1)
         hide = Gtk.CheckButton(label='hide')
         hide.set_active(True)
+        hide.set_can_focus(False)
         hide.connect('toggled',self.hide_master_pasword,self.new_pass)
         self.change_pass_page.attach(hide,2,2,1,1)
         checkbutton = Gtk.ToolButton()
         checkbutton.set_icon_name("edit-insert")
         checkbutton.set_expand(True)
+        checkbutton.set_can_focus(False)
         self.icons.append(checkbutton)
         self.change_pass_page.attach(checkbutton,3,2,1,1)
 
@@ -239,10 +243,12 @@ class MyWindow(Gtk.Window):
         hide = Gtk.CheckButton(label='hide')
         hide.set_active(True)
         hide.connect('toggled',self.hide_master_pasword,self.new_pass_2)
+        hide.set_can_focus(False)
         self.change_pass_page.attach(hide,2,3,1,1)
         checkbutton = Gtk.ToolButton()
         checkbutton.set_icon_name("edit-insert")
         checkbutton.set_expand(True)
+        checkbutton.set_can_focus(False)
         self.icons.append(checkbutton)
         self.change_pass_page.attach(checkbutton,3,3,1,1)
 
@@ -279,6 +285,17 @@ class MyWindow(Gtk.Window):
     def hide_master_pasword(self,widget,entry):
         entry.set_visibility(not widget.get_active())
 
+    def save_all_passwords(self):
+        """
+        saves all data in memory to file
+        """
+        add = False # overwrite existing
+        for record in self.data:
+            newpass(self.hashed,record,add)
+            if not add:
+                add = True # append
+        return
+
     def change_master_password(self,widget):
         """
         everyting needed for change master password
@@ -287,26 +304,16 @@ class MyWindow(Gtk.Window):
         old = self.old_pass.get_text()
         new = self.new_pass.get_text()
         new2 = self.new_pass_2.get_text()
-        #print(f"{old=},{new=},{new2=}")
         if validate_password(old): # correct old password
             if new and new2:       # new password is not empty
                 if new == new2 != old:   # both are the same and not old password
                     # now is the time to change main password
-                    # print("CORRECT")
                     # update self.hashed
                     self.hashed = hash_it(new[::-1])
-                    #print("hashed changed")
                     # save all passwords with new hash
-                    add = False
-                    for record in self.data:
-                        #print(add)
-                        newpass(self.hashed,record,add)
-                        if not add:
-                            add = True
-                    # print("data add")
+                    self.save_all_passwords()
                     # read them from file
                     self.data_refresh()
-                    #print("data refreshed")
                     # clearup entries
                     self.old_pass.set_text('')
                     self.new_pass.set_text('')
@@ -321,7 +328,7 @@ class MyWindow(Gtk.Window):
             if self.generate_for is None:
                 # copy to memory
                 self.clipboard.set_text(passtouse,-1)
-            else:
+            else: # paste chosen password to desired field
                 if self.generate_for == 0: # add password page
                     self.entry_password.set_text(passtouse)
                 if self.generate_for == 2: # edit password page
@@ -494,7 +501,6 @@ class MyWindow(Gtk.Window):
         text= ''
         # if there is list to choose from
         if maxv:=len(self.list_of_passwords):
-            # if condition:
             # pass index is in lists
             if maxv > (selvalue:=self.selected_password.get_value_as_int()) >= 0:
                 # assign value
@@ -539,11 +545,8 @@ class MyWindow(Gtk.Window):
                     if not self.data:
                         # no passwords left
                         newpass(self.hashed,delete=True)
-                    add = False
-                    for record in self.data:
-                        newpass(self.hashed,record,add)
-                        if not add:
-                            add = True
+                    self.save_all_passwords()
+
                 self.data_refresh()
         return
 
@@ -628,19 +631,16 @@ class MyWindow(Gtk.Window):
             newuser = self.edit_username.get_text()
             newpassword = self.edit_password.get_text()
             new = [newsite,newuser,newpassword]
-            if old != new:# something was changed
+            if old != new:# something has changed
                 if action == 'save':
                     # replace it
                     oldindex = self.data.index('\t\t'.join(old))
                     self.data.pop(oldindex)
                     self.data.insert(oldindex,'\t\t'.join(new))
                     # write it to file
-                    add = False
-                    for record in self.data:
-                        newpass(self.hashed,record,add)
-                        if not add:
-                            add = True
+                    self.save_all_passwords()
                     self.data_refresh()
+
                 elif action == 'refresh':
                     self.edit_site.set_text(oldsite)
                     self.edit_username.set_text(olduser)
