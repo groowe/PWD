@@ -73,13 +73,14 @@ class MyWindow(Gtk.Window):
             -gtk-icon-source: -gtk-icontheme('process-working-symbolic');
             -gtk-icon-palette: success blue, warning #fc3, error magenta;
             }
-        *:active { text-shadow: 2px 2px red; }
+        *:active { text-shadow: 2px 2px red;
+         }
         button {
             border : 10px #05FAC4;
         }
         combobox {
             border : 5px #05FAC4;
-            background : #05FAC4;
+            background-image: linear-gradient(grey, black);
         }
         box {
             background : transparent;
@@ -94,6 +95,8 @@ class MyWindow(Gtk.Window):
         }
 
         entry:focus {
+            color : white;
+            text-shadow: 1px 0px grey;
             background: black;
         }
         #nowentry {
