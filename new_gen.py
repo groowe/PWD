@@ -133,7 +133,7 @@ class MyWindow(Gtk.Window):
 
     def startpage_default(self):
         """
-        easy setting frist page to default values
+        sets first page to default values
         """
         self.description1.set_text("insert password")
         self.entry.set_text("")
@@ -165,7 +165,7 @@ class MyWindow(Gtk.Window):
         self.passpage.append_page(self.delete_password_page,Gtk.Label(label="delete"))
 
         # generate_password_window
-        self.generate_for = None #
+        self.generate_for = None # which page is password generated for
         self.manage_generate()
         self.passpage.append_page(self.generate_password_page,Gtk.Label(label="generate"))
 
@@ -225,7 +225,6 @@ class MyWindow(Gtk.Window):
         checkbutton = Gtk.ToolButton()
         checkbutton.set_icon_name("edit-insert")
         checkbutton.set_expand(True)
-
         self.icons.append(checkbutton)
         self.change_pass_page.attach(checkbutton,3,2,1,1)
 
@@ -246,6 +245,7 @@ class MyWindow(Gtk.Window):
         checkbutton.set_expand(True)
         self.icons.append(checkbutton)
         self.change_pass_page.attach(checkbutton,3,3,1,1)
+
         ### NEXT ROW
         change = Gtk.Button(label='change')
         change.connect('clicked',self.change_master_password)
@@ -262,9 +262,8 @@ class MyWindow(Gtk.Window):
         oldtext = self.old_pass.get_text()
         for entry,icon in zip(entries,self.icons):
             #print(entry is self.old_pass)
-            if not entry.get_text():
-                icon.set_icon_name(empty)
-            else:
+            icon.set_icon_name(empty)
+            if entry.get_text():
                 if entry is self.old_pass:
                     result = validate_password(entry.get_text())
                     icon.set_icon_name(ok if result else ng)
@@ -276,8 +275,6 @@ class MyWindow(Gtk.Window):
                             icon.set_icon_name(ok)
                         else:
                             icon.set_icon_name(ng)
-                    else:
-                        icon.set_icon_name(empty)
 
     def hide_master_pasword(self,widget,entry):
         entry.set_visibility(not widget.get_active())
@@ -306,13 +303,14 @@ class MyWindow(Gtk.Window):
                         newpass(self.hashed,record,add)
                         if not add:
                             add = True
-                    #print("data writed")
+                    # print("data add")
                     # read them from file
                     self.data_refresh()
                     #print("data refreshed")
-        self.old_pass.set_text('')
-        self.new_pass.set_text('')
-        self.new_pass_2.set_text('')
+                    # clearup entries
+                    self.old_pass.set_text('')
+                    self.new_pass.set_text('')
+                    self.new_pass_2.set_text('')
         return
 
     def use_generated_password(self,widget):
@@ -433,7 +431,7 @@ class MyWindow(Gtk.Window):
 
     def security_of_password(self,widget):
         """
-        computes and set limit on password length
+        computes and sets limit on password length
         """
         # if this is called,then it should be resetted
         self.clearup_pass()
@@ -904,7 +902,6 @@ class MyWindow(Gtk.Window):
 
 print("""
 TBD :
-ability to change main password
 
 color theme change ; maybe through css
 
