@@ -51,7 +51,6 @@ class MyWindow(Gtk.Window):
                 screen,self.provider,
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
         )
-        latticed = ",".join(["#262626","#626262"]*40)
 
         css = """
         * { font-size : 20px;
@@ -103,6 +102,7 @@ class MyWindow(Gtk.Window):
             """
 
         css = css.encode()
+        latticed = ",".join(["#262626","#626262"]*40)
         css += f"#noentry {{ background-image: linear-gradient({latticed});}}".encode()
             # window { background : white;}
         self.provider.load_from_data(css)
@@ -234,6 +234,7 @@ class MyWindow(Gtk.Window):
         new = self.new_pass.get_text()
         new2 = self.new_pass_2.get_text()
         print(f"{old=},{new=},{new2=}")
+        # icon for OK : emblem-checked
         return
 
     def use_generated_password(self,widget):
@@ -822,9 +823,13 @@ class MyWindow(Gtk.Window):
                 self.entry_page.set_text('')
                 self.data_refresh()
 
-print("""TBD : ability to change main password
-""")
-print("""TBD : color theme change ; maybe through css
+print("""
+TBD :
+ability to change main password
+
+color theme change ; maybe through css
+
+auto exit after certain time
 """)
 
 win = MyWindow()
