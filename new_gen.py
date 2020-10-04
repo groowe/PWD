@@ -193,16 +193,26 @@ class MyWindow(Gtk.Window):
         label = Gtk.Label(label="<b>change master password : </b>",use_markup=True)
         label.set_justify(Gtk.Justification.FILL)
         self.change_pass_page.attach(label,0,0,4,1)
+
+        ### NEXT ROW
         label = Gtk.Label(label="old password: ")
         self.change_pass_page.attach(label,0,1,1,1)
         self.old_pass = Gtk.Entry()
         self.old_pass.set_visibility(False)
+        self.old_pass.connect("changed",self.set_icons)
         self.change_pass_page.attach(self.old_pass,1,1,1,1)
         hide = Gtk.CheckButton(label='hide')
         hide.set_active(True)
         hide.connect('toggled',self.hide_master_pasword,self.old_pass)
         self.change_pass_page.attach(hide,2,1,1,1)
+        checkbutton = Gtk.ToolButton()
+        checkbutton.set_icon_name("edit-insert")
+        checkbutton.set_expand(True)
+        checkbutton.set_is_important(True)
+        self.icons = [checkbutton]
+        self.change_pass_page.attach(checkbutton,3,1,1,1)
 
+        ### NEXT ROW
         label = Gtk.Label(label="new password: ")
         self.change_pass_page.attach(label,0,2,1,1)
         self.new_pass = Gtk.Entry()
@@ -212,24 +222,67 @@ class MyWindow(Gtk.Window):
         hide.set_active(True)
         hide.connect('toggled',self.hide_master_pasword,self.new_pass)
         self.change_pass_page.attach(hide,2,2,1,1)
+        checkbutton = Gtk.ToolButton()
+        checkbutton.set_icon_name("edit-insert")
+        checkbutton.set_expand(True)
+
+        self.icons.append(checkbutton)
+        self.change_pass_page.attach(checkbutton,3,2,1,1)
+
+        ### NEXT ROW
         label = Gtk.Label(label="new password: ")
         self.change_pass_page.attach(label,0,3,1,1)
         self.new_pass_2 = Gtk.Entry()
         self.new_pass_2.set_visibility(False)
+        self.new_pass.connect("changed",self.set_icons)
+        self.new_pass_2.connect("changed",self.set_icons)
         self.change_pass_page.attach(self.new_pass_2,1,3,1,1)
         hide = Gtk.CheckButton(label='hide')
         hide.set_active(True)
         hide.connect('toggled',self.hide_master_pasword,self.new_pass_2)
         self.change_pass_page.attach(hide,2,3,1,1)
+        checkbutton = Gtk.ToolButton()
+        checkbutton.set_icon_name("edit-insert")
+        checkbutton.set_expand(True)
+        self.icons.append(checkbutton)
+        self.change_pass_page.attach(checkbutton,3,3,1,1)
+        ### NEXT ROW
         change = Gtk.Button(label='change')
         change.connect('clicked',self.change_master_password)
         self.change_pass_page.attach(change,0,4,4,1)
+        self.set_icons()
         return
+
+    def set_icons(self,*args):
+        ok = "emblem-checked" #  "dialog-ok"
+        ng = "emblem-unavailable" # "emblem-error" ""
+        warning = "gtk-dialog-warning" # "emblem-warning" "dialog-error"
+        empty = "emblem-question"
+        entries = [self.old_pass,self.new_pass,self.new_pass_2]
+        for entry,icon in zip(entries,self.icons):
+            #print(entry is self.old_pass)
+            if not (text:=entry.get_text()):
+                icon.set_icon_name(empty)
+            else:
+                if entry is self.old_pass:
+                    result = validate_password(entry.get_text())
+                    icon.set_icon_name(ok if result else ng)
+                else:
+                    text1 = self.new_pass.get_text()
+                    text2 = self.new_pass_2.get_text()
+                    if (text1 and text2):
+                        if (text1 == text2):
+                            icon.set_icon_name(ok)
+                        else:
+                            icon.set_icon_name(ng)
+                    else:
+                        icon.set_icon_name(empty)
 
     def hide_master_pasword(self,widget,entry):
         entry.set_visibility(not widget.get_active())
 
     def change_master_password(self,widget):
+        self.set_icons()
         old = self.old_pass.get_text()
         new = self.new_pass.get_text()
         new2 = self.new_pass_2.get_text()
@@ -768,6 +821,7 @@ class MyWindow(Gtk.Window):
         if site+username+password:
             self.record_for_del = f"{site}\t\t{username}\t\t{password}"
         return
+
     def button_generate(self,widget):
         """
         switches to "generate password" page and remembers where it was sent from
