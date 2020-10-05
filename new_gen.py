@@ -13,7 +13,7 @@ class MyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self,title="password manager")
         self.connect("destroy",Gtk.main_quit)
-        self.connect("event-after",self.checkout)
+        self.connect("event-after",self.checkout) # for timeout 
         try: # no need to crash because of missing icon
             self.set_icon_from_file('tux4.png')
         except:
