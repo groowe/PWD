@@ -13,6 +13,7 @@ class MyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self,title="password manager")
         self.connect("destroy",Gtk.main_quit)
+        self.connect("event-after",self.checkout)
         try: # no need to crash because of missing icon
             self.set_icon_from_file('tux4.png')
         except:
@@ -21,6 +22,7 @@ class MyWindow(Gtk.Window):
         self.set_border_width(3)
         self.hashed = ''
         # variables for passwords
+
         self.data = [' \t\t \t\t ']
         self.data_store = Gtk.ListStore(str,str,str)
         self.data_store.append(self.data[0].split('\t\t'))
@@ -31,10 +33,22 @@ class MyWindow(Gtk.Window):
 
         self.set_ui()
 
+    def checkout(self,*widget):
+        """
+        reseting progressbar (timeout) to 0 when some event happens
+        """
+        self.progressbar.set_fraction(0)
+        return
+
     def set_ui(self):
         self.set_css()
         self.notebook = Gtk.Notebook()
-        self.add(self.notebook)
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing=6)
+        self.box.pack_start(self.notebook,True,True,0)
+        self.progressbar = Gtk.ProgressBar()
+        self.box.pack_start(self.progressbar, False, False, 0)
+        self.add(self.box)
+
         self.notebook.set_show_tabs(False)
         self.main_page()
         self.notebook.append_page(self.startpage)
@@ -42,6 +56,20 @@ class MyWindow(Gtk.Window):
         self.notebook.append_page(self.passpage)
         # for ability to copy to clipboard
         self.clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+
+        # exit after 30 seconds of inactivity
+        self.timeout_id = GLib.timeout_add(30, self.on_timeout, None)
+
+    def on_timeout(self, user_data):
+        """
+        Update value on the progress bar
+        """
+        new_value = self.progressbar.get_fraction() + 0.001
+        if new_value >= 1:
+            # kill .. maybe make it optional?.. nah
+            Gtk.main_quit()
+        self.progressbar.set_fraction(new_value)
+        return True
 
     def set_css(self):
         screen = Gdk.Screen.get_default()
@@ -102,6 +130,13 @@ class MyWindow(Gtk.Window):
         #nowentry {
             background-image: linear-gradient(#606060,#060606);
             }
+
+
+        progressbar > trough > progress {
+            background-image: linear-gradient(#606060,#060606);
+            background-color: green;
+            }
+
             """
 
         css = css.encode()
@@ -688,6 +723,7 @@ class MyWindow(Gtk.Window):
                 if eisentry:
                     e.grab_focus()
                     e.set_name("nowentry")
+
         return
 
     def manage_read_pass_page(self):
@@ -908,7 +944,6 @@ TBD :
 
 color theme change ; maybe through css
 
-auto exit after certain time
 """)
 
 win = MyWindow()
