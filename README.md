@@ -17,4 +17,6 @@ it needs pwtools.py as dependency<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; add new site/user/password<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; modify/delete existing passwords<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; generate secure passwords</b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; change main password</b><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; timeouts after 30s for safety</b><br>
 

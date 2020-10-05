@@ -133,8 +133,8 @@ class MyWindow(Gtk.Window):
 
 
         progressbar > trough > progress {
-            background-image: linear-gradient(#606060,#060606);
-            background-color: green;
+            background-image: linear-gradient(#606060,#6A6A6A,#060606,#A6A6A6);
+
             }
 
             """
