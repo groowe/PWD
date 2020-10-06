@@ -43,16 +43,14 @@ default_css = """
             border : 5px #05FAC4;
             background-image: linear-gradient(grey, black);
         }
-        box {
-            background : transparent;
-        }
+        box {  background : transparent; }
+
         button:active {
             box-shadow: 0 12px 6px 0 rgba(100,100,100,0.24), 0 17px 20px 0 rgba(100,100,100,0.24);
                     }
-        button:hover,whitebutton
-        {
+        button:hover {
             background-image: linear-gradient(grey, black);
-            box-shadow: 0 8px 6px 0 rgba(0,0,0,0.24), 0 8px 6px 0 rgba(0,0,0,0.19);
+            box-shadow: 0 10px 16px 0 rgba(0,0,0,0.24), 0 18px 16px 0 rgba(0,0,0,0.19);
         }
 
         entry:focus {
@@ -266,7 +264,6 @@ class MyWindow(Gtk.Window):
         checkbutton = Gtk.ToolButton()
         checkbutton.set_icon_name("edit-insert")
         checkbutton.set_expand(True)
-        #checkbutton.set_is_important(True)
         checkbutton.set_can_focus(False)
         self.icons = [checkbutton]
         self.change_pass_page.attach(checkbutton,3,1,1,1)
@@ -319,7 +316,7 @@ class MyWindow(Gtk.Window):
     def set_icons(self,*args):
         ok = "emblem-checked" #  "dialog-ok"
         ng = "emblem-unavailable" # "emblem-error" ""
-        warning = "gtk-dialog-warning" # "emblem-warning" "dialog-error"
+        # warning = "gtk-dialog-warning" # "emblem-warning" "dialog-error"
         empty = "emblem-question"
         entries = [self.old_pass,self.new_pass,self.new_pass_2]
         oldtext = self.old_pass.get_text()
@@ -796,7 +793,8 @@ class MyWindow(Gtk.Window):
         index = ['site','username','password'].index(string)
         selected = self.site_selection.get_active_iter()
         #selected = self.data_store.get_active_iter()
-        self.clipboard.set_text(self.data_store[selected][index], -1)
+        if selected:
+            self.clipboard.set_text(self.data_store[selected][index], -1)
 
     def manage_add_pass_page(self):
         # add passwods
