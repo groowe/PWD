@@ -9,11 +9,94 @@ from gi.repository import Gtk, GLib,Gdk
 from pwtools import validate_password,uncode,newpass
 from pwtools import newrandompass,hash_it
 
+css_file = 'pm.css' # for saving settings
+
+# default css settings
+latticed = ",".join(["#262626","#626262"]*40)
+default_css = """
+        * { font-size : 20px;
+            background : #000000;
+            background-image: linear-gradient(#000000, #222222);
+            color : grey;
+                    }
+        *:disabled {
+            background-color: #8A8A8A;
+                }
+        label:focus {
+            background-color: #b4940f;
+            }
+
+        entry,label { border-color : #FFFFFF;
+                font-size : 22px;
+                background : transparent;
+                }
+        spinner {
+            -gtk-icon-source: -gtk-icontheme('process-working-symbolic');
+            -gtk-icon-palette: success blue, warning #fc3, error magenta;
+            }
+        *:active { text-shadow: 2px 2px red;
+         }
+        button {
+            border : 10px #05FAC4;
+        }
+        combobox {
+            border : 5px #05FAC4;
+            background-image: linear-gradient(grey, black);
+        }
+        box {
+            background : transparent;
+        }
+        button:active {
+            box-shadow: 0 12px 6px 0 rgba(100,100,100,0.24), 0 17px 20px 0 rgba(100,100,100,0.24);
+                    }
+        button:hover,whitebutton
+        {
+            background-image: linear-gradient(grey, black);
+            box-shadow: 0 8px 6px 0 rgba(0,0,0,0.24), 0 8px 6px 0 rgba(0,0,0,0.19);
+        }
+
+        entry:focus {
+            color : white;
+            text-shadow: 1px 0px grey;
+            background: black;
+        }
+        #nowentry {
+            background-image: linear-gradient(#606060,#060606);
+            }
+
+        progressbar > trough > progress {
+            background-image: linear-gradient(#606060,#6A6A6A,#060606,#A6A6A6);
+
+            }
+
+            """
+default_css += f"#noentry {{ background-image: linear-gradient({latticed});}}"
+
+def read_saved_css() -> str:
+    """
+    load saved css as string
+    """
+    try: # read saved settings
+        with open(css_file,'r') as f:
+            data = '\n'.join(f.readlines())
+    except FileNotFoundError:
+        # file doesn't exists yet
+        try:
+            with open(css_file,'w') as f:
+                f.writelines(default_css.split('\n'))
+            return read_saved_css()
+        except:
+            # problem with writing file down
+            # not problem now,but it could be in future
+            #print("unable to save settings,unable remember changes!")
+            return default_css
+    return data
+
 class MyWindow(Gtk.Window):
     def __init__(self):
         Gtk.Window.__init__(self,title="password manager")
         self.connect("destroy",Gtk.main_quit)
-        self.connect("event-after",self.checkout) # for timeout 
+        self.connect("event-after",self.checkout) # for timeout
         try: # no need to crash because of missing icon
             self.set_icon_from_file('tux4.png')
         except:
@@ -78,73 +161,9 @@ class MyWindow(Gtk.Window):
         style_context.add_provider_for_screen(
                 screen,self.provider,
                 Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
-        )
+                )
+        self.provider.load_from_data(read_saved_css().encode())
 
-        css = """
-        * { font-size : 20px;
-            background : #000000;
-            background-image: linear-gradient(#000000, #222222);
-            color : grey;
-                    }
-        *:disabled {
-            background-color: #8A8A8A;
-                }
-        label:focus {
-            background-color: #b4940f;
-            }
-
-        entry,label { border-color : #FFFFFF;
-                font-size : 22px;
-                background : transparent;
-                }
-        spinner {
-            -gtk-icon-source: -gtk-icontheme('process-working-symbolic');
-            -gtk-icon-palette: success blue, warning #fc3, error magenta;
-            }
-        *:active { text-shadow: 2px 2px red;
-         }
-        button {
-            border : 10px #05FAC4;
-        }
-        combobox {
-            border : 5px #05FAC4;
-            background-image: linear-gradient(grey, black);
-        }
-        box {
-            background : transparent;
-        }
-        button:active {
-            box-shadow: 0 12px 6px 0 rgba(100,100,100,0.24), 0 17px 20px 0 rgba(100,100,100,0.24);
-                    }
-        button:hover,whitebutton
-        {
-            background-image: linear-gradient(grey, black);
-            box-shadow: 0 8px 6px 0 rgba(0,0,0,0.24), 0 8px 6px 0 rgba(0,0,0,0.19);
-        }
-
-        entry:focus {
-            color : white;
-            text-shadow: 1px 0px grey;
-            background: black;
-        }
-        #nowentry {
-            background-image: linear-gradient(#606060,#060606);
-            }
-
-
-        progressbar > trough > progress {
-            background-image: linear-gradient(#606060,#6A6A6A,#060606,#A6A6A6);
-
-            }
-
-            """
-
-        css = css.encode()
-        latticed = ",".join(["#262626","#626262"]*40)
-        css += f"#noentry {{ background-image: linear-gradient({latticed});}}".encode()
-            # window { background : white;}
-        self.provider.load_from_data(css)
-        #print(f"{self.provider.list_properties()=}")
     def main_page(self):
         self.startpage = Gtk.Grid()
         self.startpage.set_border_width(10)
@@ -939,13 +958,15 @@ class MyWindow(Gtk.Window):
                 self.entry_page.set_text('')
                 self.data_refresh()
 
-print("""
-TBD :
+if __name__ == '__main__':
 
-color theme change ; maybe through css
+    print("""
+    TBD :
 
-""")
+    color theme change ; maybe through css
 
-win = MyWindow()
-win.show_all()
-Gtk.main()
+    """)
+
+    win = MyWindow()
+    win.show_all()
+    Gtk.main()
