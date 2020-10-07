@@ -118,7 +118,7 @@ class MyWindow(Gtk.Window):
 
         self._set_ui()
 
-    def _checkout(self, *widget):
+    def _checkout(self, *_):
         """Reset progressbar (timeout) to 0 after any event."""
         self._progressbar.set_fraction(0)
 
@@ -142,7 +142,7 @@ class MyWindow(Gtk.Window):
         # exit after 30 seconds of inactivity
         self._timeout_id = GLib.timeout_add(30, self._on_timeout, None)
 
-    def _on_timeout(self, user_data):
+    def _on_timeout(self, *_):
         """Update value on the progress bar."""
         new_value = self._progressbar.get_fraction() + 0.001
         if new_value >= 1:
@@ -356,7 +356,7 @@ class MyWindow(Gtk.Window):
             if not add:
                 add = True  # append
 
-    def _change_master_password(self, widget):
+    def _change_master_password(self, *_):
         """Everyting needed for change master password."""
         self._set_icons()
         old = self._old_pass.get_text()
@@ -378,7 +378,7 @@ class MyWindow(Gtk.Window):
                     self._new_pass.set_text('')
                     self._new_pass_2.set_text('')
 
-    def _use_generated_password(self, widget):
+    def _use_generated_password(self, *_):
         if self._list_of_passwords:
             value = self._selected_password.get_value_as_int()
             passtouse = self._list_of_passwords[value]
@@ -391,9 +391,9 @@ class MyWindow(Gtk.Window):
                 # no point if nothing is selected
                 if self._site_select_for_edit.get_active_iter() is not None:
                     self._edit_password.set_text(passtouse)
-
-            self._passpage.set_current_page(self._generate_for)
-            self._generate_for = None
+            if self._generate_for is not None:
+                self._passpage.set_current_page(self._generate_for)
+                self._generate_for = None
         use_pass_label = f"{'copy' if self._generate_for is None else 'use'} pass"
         self._use_pass.set_label(use_pass_label)
 
@@ -496,12 +496,12 @@ class MyWindow(Gtk.Window):
         self._selected_password.set_range(0, 0)
 
     def _on_min_change(self, widget):
-        value = self._minlen.get_value_as_int()
+        value = widget.get_value_as_int()
         self._maxlen.set_range(value, value+50)
         self._clearup_pass()
 
     def _on_max_change(self, widget):
-        value = self._maxlen.get_value_as_int()
+        value = widget.get_value_as_int()
         if self._minlen.get_value_as_int() > value:
             self._minlen.set_value(value)
         self._clearup_pass()
