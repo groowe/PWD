@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Gtk gui for password manager."""
-
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib, Gdk
 
 from pwtools import validate_password, uncode, newpass
 from pwtools import newrandompass, hash_it
+
 
 CSS_FILE = 'pm.css'  # for saving settings
 
@@ -96,11 +96,11 @@ class MyWindow(Gtk.Window):
         Gtk.Window.__init__(self, title="password manager")
         self.connect("destroy", Gtk.main_quit)
         self.connect("event-after", self._checkout)  # for timeout
-        try:  # no need to crash because of missing icon
+        try:  # no need to crash because of icon
             self.set_icon_from_file('tux4.png')
         except Exception as ex:
             print('icon (tux4.png) not found')
-            print(ex)  # delete asap
+            print(ex)
         self.set_size_request(200, 100)
         self.set_border_width(3)
         self._hashed = ''
@@ -165,7 +165,9 @@ class MyWindow(Gtk.Window):
         self._startpage = Gtk.Grid()
         self._startpage.set_border_width(10)
 
-        self._description1 = Gtk.Label(label="<b>insert password</b>", use_markup=True)
+        self._description1 = Gtk.Label(
+                label="<b>insert password</b>", use_markup=True
+                )
         self._startpage.attach(self._description1, 0, 0, 2, 1)
 
         self._entry = Gtk.Entry()
@@ -325,9 +327,9 @@ class MyWindow(Gtk.Window):
         self._change_pass_page.attach(change, 0, 4, 4, 1)
         self._set_icons()
 
-    def _set_icons(self, *args):
-        ok = "emblem-checked"  # "dialog-ok"
-        ng = "emblem-unavailable"  # "emblem-error" ""
+    def _set_icons(self, *_):
+        ok_icon = "emblem-checked"  # "dialog-ok"
+        ng_icon = "emblem-unavailable"  # "emblem-error" ""
         # warning = "gtk-dialog-warning" # "emblem-warning" "dialog-error"
         empty = "emblem-question"
         entries = [self._old_pass, self._new_pass, self._new_pass_2]
@@ -338,15 +340,15 @@ class MyWindow(Gtk.Window):
             if entry.get_text():
                 if entry is self._old_pass:
                     result = validate_password(entry.get_text())
-                    icon.set_icon_name(ok if result else ng)
+                    icon.set_icon_name(ok_icon if result else ng_icon)
                 else:
                     text1 = self._new_pass.get_text()
                     text2 = self._new_pass_2.get_text()
                     if text1 and text2:
                         if text1 == text2 != oldtext:
-                            icon.set_icon_name(ok)
+                            icon.set_icon_name(ok_icon)
                         else:
-                            icon.set_icon_name(ng)
+                            icon.set_icon_name(ng_icon)
 
     def _save_all_passwords(self):
         """Save all data in memory to file."""
@@ -394,7 +396,8 @@ class MyWindow(Gtk.Window):
             if self._generate_for is not None:
                 self._passpage.set_current_page(self._generate_for)
                 self._generate_for = None
-        use_pass_label = f"{'copy' if self._generate_for is None else 'use'} pass"
+        copy_or_use = "copy" if self._generate_for is None else "use"
+        use_pass_label = f"{copy_or_use} pass"
         self._use_pass.set_label(use_pass_label)
 
     def _manage_generate(self):
@@ -422,7 +425,9 @@ class MyWindow(Gtk.Window):
             Gtk.Adjustment(lower=0, upper=0, step_increment=1)
             )
         self._selected_password.connect("changed", self._show_pass)
-        self._generate_password_page.attach(self._selected_password, 2, 1, 1, 1)
+        self._generate_password_page.attach(
+                self._selected_password, 2, 1, 1, 1
+            )
 
         self._use_pass = Gtk.Button(
             label=f"{'copy' if self._generate_for is None else 'use'} pass"
@@ -568,14 +573,14 @@ class MyWindow(Gtk.Window):
             self._selected_password.set_value(0)
             self._selected_password.set_range(0, len(self._list_of_passwords)-1)
 
-    def _show_pass(self, widget):
+    def _show_pass(self, *_):
         text = ''
         # if there is list to choose from
         if maxv := len(self._list_of_passwords):
             # pass index is in lists
-            if maxv > (selvalue := self._selected_password.get_value_as_int()) >= 0:
+            if maxv > (val := self._selected_password.get_value_as_int()) >= 0:
                 # assign value
-                text = self._list_of_passwords[selvalue]
+                text = self._list_of_passwords[val]
         self._chosen_password.set_text(text)
         return
 
@@ -605,14 +610,18 @@ class MyWindow(Gtk.Window):
 
         self._user_for_del = Gtk.Label(label='self._user_for_del')
         self._usershows.append(self._user_for_del)
-        self._delete_password_page.pack_start(self._user_for_del, False, False, 0)
+        self._delete_password_page.pack_start(
+                self._user_for_del, False, False, 0
+            )
         self._pass_for_del = Gtk.Label(label='self._pass_for_del')
         self._passshows.append(self._pass_for_del)
-        self._delete_password_page.pack_start(self._pass_for_del, False, False, 0)
+        self._delete_password_page.pack_start(
+                self._pass_for_del, False, False, 0
+            )
 
-    def _manage_entry(self, widget, strinfo):
+    def _manage_entry(self, _, strinfo):
         if strinfo == 'delete_entry':
-            if todelete:=self._record_for_del:
+            if todelete := self._record_for_del:
                 if todelete in self._data:
                     self._data.pop(self._data.index(todelete))
                     if not self._data:
@@ -927,7 +936,6 @@ class MyWindow(Gtk.Window):
         self._counter_label.set_text(f"{len(self._data)} passwords")
         if site+username+password:
             self._record_for_del = f"{site}\t\t{username}\t\t{password}"
-        return
 
     def _button_generate(self, widget):
         """
@@ -941,7 +949,6 @@ class MyWindow(Gtk.Window):
             )
         # switch page
         self._passpage.set_current_page(4)
-
 
     def _button_clicked(self, widget, strinfo):
         if strinfo == "password":
@@ -968,8 +975,8 @@ class MyWindow(Gtk.Window):
                     # three tries tops
                     Gtk.main_quit()
                 self._description1.set_markup(
-                        f"<b>wrong password {self._wrong_pass}/3 !</b>"
-                        )
+                    f"<b>wrong password {self._wrong_pass}/3 !</b>"
+                )
                 # ready to another entry of password
                 self._entry.grab_focus_without_selecting()
             # reset password entry
@@ -993,13 +1000,7 @@ class MyWindow(Gtk.Window):
 
 
 if __name__ == '__main__':
-    """
-    TBD :
-
-    color theme change ; maybe through css
-
-    """
-
+    """  TBD : color theme change ; maybe through css """
     win = MyWindow()
     win.show_all()
     Gtk.main()
