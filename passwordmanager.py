@@ -9,39 +9,7 @@ from cryptography.fernet import Fernet
 import random # for random gen pass
 from string import punctuation
 from string import digits,ascii_lowercase,ascii_uppercase
-def extrachars():
-    """
-    unicodes of seriously special chars
-    upside: this makes passwords basically
-            immune for brute-force
-    downside: majority of those chars are
-            on some sites (like google)
-            invalid... so unusable
-    """
-    b = range(0x2801,0x2900)
-    c = range(0x11044,0x110a8)
-    d = range(0x10cc0, 0x10d24)
-    e = range(0x10b30, 0x10b94)
-    f = range(0x1093c, 0x109a0 )
-    g = range(0x10a68 ,0x10f18)
-    h = range(0x10360 ,0x10a04)
-    i = range(0xfb2c,0x102fc)
-    j = range(0xa7f8 ,0xfa64)
-    k = range(0x2e7c ,0xa794)
-    l = range(0x2c24 , 0x2e18)
-    m = range(0x2aea ,0x2bc0)
-    n = range(0x283c , 0x2968)
-    o = range(0x2328 ,0x26ac)
-    r = [b,c,d,e,f,g,h,i,j,k,l,m,n,o]
-    allch= []
-    for ia in r:
-        allch.extend([chr(i) for i in ia
-            if chr(i).isprintable() # only printable chars
-            if not chr(i).isascii() # ascii is in another list
-            if not chr(i).isspace()]) # spaces are usually not permitted
-    allch=list(set(allch))
-    return ''.join(allch)
-
+from pwtools import extrachars,genpass
 
 def newrandompass():
     """ manages creating new password """
@@ -167,7 +135,7 @@ def newrandompass():
     passw = ""
     while len(passw) == 0:
         print('generating passwords:\n')
-        passwords  = genpass(usechars,lists,lenpass,lenmax)
+        passwords  = genpass(lists,lenpass,lenmax)
         for i,x in zip(range(len(passwords)),passwords):
             print(f'({i})\t{x}')
         c = input('choose password you like (its number)\n or enter to generate again\n')
@@ -188,110 +156,6 @@ def newrandompass():
             passw= ''
             continue
     return passw
-
-def validatepass(passw,lists):
-    """check if chars from all lists are used"""
-    for i in lists:
-        init = False
-        for a in i:
-            if a in passw:
-                init = True
-                break
-        if not init:
-            return False
-    return True
-
-def genpass_old(chars,lists,minlen,maxlen):
-    """
-    not used now
-    was ok,but then one of lists got
-    multiple times longer than others
-    (extra chars)
-    and this never generated a thing
-
-    """
-    # chars to choose from
-    # lists needed to be used from
-
-    # generate 10 passwords:
-    passwords = []
-    while len(passwords) < 10:
-#        print('*',end='')
-        passw = ""
-        if minlen < maxlen:
-            passlen = random.randint(minlen,maxlen)
-        else:
-            passlen = minlen
-        while len(passw) < passlen:
-            passw+= chars[random.randint(0,len(chars)-1)]
-        if validatepass(passw,lists):
-            passwords.append(passw)
-#            print('\n',len(passwords))
-    return passwords
-
-
-def genpass(chars,lists,minlen,maxlen):
-    """
-    function for generating safe passwords
-    chars = string of all chars to use
-    lists = list of strings to use
-    minlen = minimal length of password
-    maxlen = maximal -//-
-    """
-    # chars to choose from
-    # lists needed to be used from
-
-    # generate 10 passwords:
-    passwords = []
-    while len(passwords) < 10:
-#        print('*',end='')
-        passw = ""
-        if minlen < maxlen:
-            # pick length of password randomly
-            passlen = random.randint(minlen,maxlen)
-        else:
-            passlen = minlen
-        if len(lists) > 1:
-            # this is update of older version!
-            # make all lists same length
-#               old way:
-#            targetchoices = passlen*2
-#            if targetchoices  < 3:
-#                targetchoices = 3
-#            choice = ''
-#            for c in lists:
-#                for i in range(targetchoices):
-#                    choice += random.choice(c)
-#                new way:
-            choice = ''
-            for c in lists:
-                if len(c) > passlen:
-                    choice += ''.join(random.sample(c,passlen))
-                elif len(c) == passlen:
-                    choice += c
-                else:
-                    done = 0
-                    while passlen - done > len(c):
-                        choice += c
-                        done+=len(c)
-                    choice += ''.join(random.sample(c,passlen-done))
-            # no matter how much longer
-            # one list is than others,
-            # after this
-            # every list is same length
-            # (selected random chars are..)
-
-        elif len(lists) == 1:
-            choice = chars
-
-        while len(passw) < passlen:
-            chosen_char = choice[random.randint(0,len(choice)-1)]
-            passw+= chosen_char
-            choice = choice.replace(chosen_char,'')+chosen_char
-        if validatepass(passw,lists):
-            passwords.append(passw)
-#            print('\n',len(passwords))
-    return passwords
 
 filename = 'safepasswords'
 def hash_it(mainpassword): # mainpassword= str

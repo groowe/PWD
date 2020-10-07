@@ -9,8 +9,8 @@ if deleted,program starts fresh<br>
 <b>passwordmanager.py in terminal only</b><br>
 
 <h2>Gtk gui is from new_gen.py</h2>
-it needs pwtools.py as dependency<br>
 
+both need pwtools.py as dependency<br>
 
 <h2><b>abilities:</h2><br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; show stored passwords<br>

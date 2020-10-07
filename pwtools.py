@@ -71,7 +71,7 @@ def readfileraw(return_file=False):
         # file doesn't exists
         return False
     if not filelines:
-        # if
+        # file exists,but is empty
         return False
     return filelines if return_file else True
 
@@ -85,15 +85,19 @@ def validatepass(password,lists):
         # it would make problems ...
         # if it will be improved,then this can be removed
     #    return False
-    for list in lists:
-        used = False
-        for character in password:
-            if character in list:
-                used = True
-                break
-        if not used:
-            return False
-    return True
+    notfound = [True for i in range(len(lists))] # indexes of not found lists
+    for character in password:
+        if sum(notfound) == 0:
+            break
+        for index,nf in enumerate(zip(notfound,lists)):
+            # if nf[0] is True, character from that list was not used yet
+            if nf[0]:
+                if character in nf[1]:
+                    notfound[index] = False
+                    break
+    # if there are some not used lists,
+    # then this returns False
+    return sum(notfound) == 0
 
 def genpass(lists,minlen,maxlen):
     """
@@ -233,7 +237,7 @@ def uncode(hashed):
             raw = raw.decode('utf-8')
         except AttributeError as exception:
             # this should NEVER happen
-            print(f"error in logic (uncode function)\n{exception}")
+            print(f"error in logic (uncode function at {__file__})\n{exception}")
             raise SystemExit
         result.append(raw)
     return result
@@ -275,7 +279,10 @@ def validate_password(password:str):
     hash2 = hash_it(password)
     check = readfile(hash2,False)
     if check == None:
+        # file doesn't exists, password is being created now
         return None
     if not check:
+        # wrong password
         return False
+    # good password,return its hash
     return hash2
