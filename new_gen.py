@@ -74,6 +74,9 @@ def read_saved_css() -> str:
     """
     load saved css as string
     """
+    ### no mechanism for change now,
+    ### so return variable directly
+    return default_css
     try: # read saved settings
         with open(css_file,'r') as f:
             data = '\n'.join(f.readlines())
@@ -259,7 +262,7 @@ class MyWindow(Gtk.Window):
         hide = Gtk.CheckButton(label='hide')
         hide.set_active(True)
         hide.set_can_focus(False)
-        hide.connect('toggled',self.hide_master_pasword,self.old_pass)
+        hide.connect('toggled',self.hide_text,self.old_pass)
         self.change_pass_page.attach(hide,2,1,1,1)
         checkbutton = Gtk.ToolButton()
         checkbutton.set_icon_name("edit-insert")
@@ -277,7 +280,7 @@ class MyWindow(Gtk.Window):
         hide = Gtk.CheckButton(label='hide')
         hide.set_active(True)
         hide.set_can_focus(False)
-        hide.connect('toggled',self.hide_master_pasword,self.new_pass)
+        hide.connect('toggled',self.hide_text,self.new_pass)
         self.change_pass_page.attach(hide,2,2,1,1)
         checkbutton = Gtk.ToolButton()
         checkbutton.set_icon_name("edit-insert")
@@ -296,7 +299,7 @@ class MyWindow(Gtk.Window):
         self.change_pass_page.attach(self.new_pass_2,1,3,1,1)
         hide = Gtk.CheckButton(label='hide')
         hide.set_active(True)
-        hide.connect('toggled',self.hide_master_pasword,self.new_pass_2)
+        hide.connect('toggled',self.hide_text,self.new_pass_2)
         hide.set_can_focus(False)
         self.change_pass_page.attach(hide,2,3,1,1)
         checkbutton = Gtk.ToolButton()
@@ -335,9 +338,6 @@ class MyWindow(Gtk.Window):
                             icon.set_icon_name(ok)
                         else:
                             icon.set_icon_name(ng)
-
-    def hide_master_pasword(self,widget,entry):
-        entry.set_visibility(not widget.get_active())
 
     def save_all_passwords(self):
         """
@@ -506,26 +506,28 @@ class MyWindow(Gtk.Window):
         specials = self.use_specials.get_active()
         extra = self.use_extra.get_active()
         # minimum must be amount of selected lists
-        # (due to checking logic of password validity...)
-        x = lower + upper + digits + specials + extra
+        # (due to checking logic of password ...)
+        minpasslen = lower + upper + digits + specials + extra
         if not self.enforce_secure.get_active():
-            if x < 3:
-                x = 3
-            self.minlen.set_range(x,50)
-            self.maxlen.set_range(x,50)
+            if minpasslen < 3:
+                minpasslen = 3
+            self.minlen.set_range(minpasslen,50)
+            self.maxlen.set_range(minpasslen,50)
             return
-        now = 0
-        now += 26 if lower else 0
-        now += 26 if upper else 0
-        now += 32 if specials else 0
-        now += 10 if digits else 0
-        now += 48647 if extra else 0
+        # security of password is enabled
+        # base depends on lists selected
+        base = 0
+        base += 26 if lower else 0
+        base += 26 if upper else 0
+        base += 32 if specials else 0
+        base += 10 if digits else 0
+        base += 48647 if extra else 0
 
-        if now: # if none selected,this would go FOREVER..
-            while now**x < optimal:
-                x+=1
-            self.minlen.set_range(x,x+50)
-            self.maxlen.set_range(x,x+50)
+        if base: # if none selected,this would go FOREVER..
+            while base**minpasslen < optimal:
+                minpasslen+=1
+            self.minlen.set_range(minpasslen,minpasslen+50)
+            self.maxlen.set_range(minpasslen,minpasslen+50)
 
     def generate(self,widget):
         """
@@ -545,7 +547,7 @@ class MyWindow(Gtk.Window):
             # at least one has to be true
             self.list_of_passwords = newrandompass(lower,upper,digits,specials,
                                                     extra,minlen,maxlen)
-            #print(self.list_of_passwords)
+            # print(self.list_of_passwords)
             self.chosen_password.set_text(self.list_of_passwords[0])
             self.selected_password.set_value(0)
             self.selected_password.set_range(0,len(self.list_of_passwords)-1)
@@ -739,7 +741,6 @@ class MyWindow(Gtk.Window):
                 if eisentry:
                     e.grab_focus()
                     e.set_name("nowentry")
-
         return
 
     def manage_read_pass_page(self):
@@ -792,7 +793,6 @@ class MyWindow(Gtk.Window):
     def copycontext(self,widget,string):
         index = ['site','username','password'].index(string)
         selected = self.site_selection.get_active_iter()
-        #selected = self.data_store.get_active_iter()
         if selected:
             self.clipboard.set_text(self.data_store[selected][index], -1)
 
@@ -838,6 +838,9 @@ class MyWindow(Gtk.Window):
         for managing showing/hiding input
         """
         value = widget.get_active()
+        if type(string_info) != str:
+            # it is entry
+            string_info.set_visibility(not value)
         if string_info == "pw_page":
             self.entry_password.set_visibility(not value)
             self.entry_password.grab_focus_without_selecting()

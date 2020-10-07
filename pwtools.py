@@ -109,32 +109,16 @@ def genpass(lists,minlen,maxlen):
             passlen = random.randint(minlen,maxlen)
         else:
             passlen = minlen
-
-        if len(lists) > 1:
-            # for equal chance of picking character
-            # from all lists of characters
-            # regardless if one is significantly bigger
-            choice =''
-            for c in lists:
-                if lenc:=len(c) > passlen:
-                    choice += ''.join(random.sample(c,passlen))
-                elif lenc == passlen:
-                    choice += c
-                else:
-                    done = 0
-                    while passlen - done > len(c):
-                        choice += c
-                        done += len(c)
-                    choice += ''.join(random.sample(c,passlen-done))
+        choice = ''
+        for l in lists:
+            # for equal chance of chosing char from list regardless
+            # if some are significantly larger (like extrachars here)
+            choice += ''.join(random.choices(l,k=passlen))
+            print(f"{choice=}")
+        if len(lists) == 1:
+            passw = choice
         else:
-            choice = lists[0]
-        """
-        passw = ''.join(random.sample(choice,passlen))
-        """
-        while len(passw) < passlen:
-            chosen_char = choice[random.randint(0,len(choice)-1)]
-            passw += chosen_char
-            choice = choice.replace(chosen_char,'')+chosen_char
+            passw = ''.join(random.choices(choice,k=passlen))
 
         if validatepass(passw,lists):
             passwords.append(passw)
