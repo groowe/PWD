@@ -114,7 +114,6 @@ def genpass(lists,minlen,maxlen):
             # for equal chance of chosing char from list regardless
             # if some are significantly larger (like extrachars here)
             choice += ''.join(random.choices(l,k=passlen))
-            print(f"{choice=}")
         if len(lists) == 1:
             passw = choice
         else:
@@ -158,9 +157,10 @@ def extrachars():
     allch=list(set(allch))
     return ''.join(allch)
 
-def newrandompass(low=True,high=True,use_digits=True,
-                    specials=True,extra=True,
-                    min_length=10,max_length=20):
+def newrandompass(low=True,high=True,
+                use_digits=True,specials=True,
+                extra=True,
+                min_length=10,max_length=20):
     """
     builds
     """
@@ -267,7 +267,10 @@ def readfile(hashed,full=False):
         return bool(check)
     return uncode()
 
-def validate_password(password:str) -> bool:
+def validate_password(password:str):
+    """
+    solely for checking if main password is ok
+    """
     password = password[::-1]
     hash2 = hash_it(password)
     check = readfile(hash2,False)
