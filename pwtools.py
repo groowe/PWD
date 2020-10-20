@@ -123,10 +123,10 @@ def genpass(lists, minlen, maxlen):
         else:
             passlen = minlen
         choice = ''
-        for l in lists:
+        for list_ in lists:
             # for equal chance of chosing char from list regardless
             # if some are significantly larger (like extrachars here)
-            choice += ''.join(random.choices(l, k=passlen))
+            choice += ''.join(random.choices(list_, k=passlen))
         if len(lists) == 1:
             # len(choice) is already passlen
             # and it was already randomly selected

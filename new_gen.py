@@ -5,90 +5,8 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, GLib, Gdk
 
 from pwtools import validate_password, uncode, newpass
-from pwtools import newrandompass, hash_it
-
-
-CSS_FILE = 'pm.css'  # for saving settings
-
-# default css settings
-LATTICED = ", ".join(["#262626", "#626262"]*40)
-DEFAULT_CSS = """
-* { font-size : 20px;
-    background : #000000;
-    background-image: linear-gradient(#000000, #222222);
-    color : grey;
-    }
-*:disabled {
-    background-color: #8A8A8A;
-    }
-label:focus {
-    background-color: #b4940f;
-    }
-entry, label { border-color : #FFFFFF;
-            font-size : 22px;
-            background : transparent;
-    }
-spinner {
-    -gtk-icon-source: -gtk-icontheme('process-working-symbolic');
-    -gtk-icon-palette: success blue, warning #fc3, error magenta;
-    }
-*:active { text-shadow: 2px 2px red;
-     }
-button {
-    border : 10px #05FAC4;
-    }
-combobox {
-    border : 5px #05FAC4;
-    background-image: linear-gradient(grey, black);
-    }
-box {  background : transparent; }
-
-button:active {
-    box-shadow: 0 12px 6px 0 rgba(100, 100, 100, 0.24),
-                0 17px 20px 0 rgba(100, 100, 100, 0.24);
-    }
-button:hover {
-    background-image: linear-gradient(grey, black);
-    box-shadow: 0 10px 16px 0 rgba(0, 0, 0, 0.24),
-                0 18px 16px 0 rgba(0, 0, 0, 0.19);
-    }
-
-entry:focus {
-    color : white;
-    text-shadow: 1px 0px grey;
-    background: black;
-    }
-#nowentry {
-    background-image: linear-gradient(#606060, #060606);
-    }
-
-progressbar > trough > progress {
-    background-image: linear-gradient(#606060, #6A6A6A, #060606, #A6A6A6);
-    }
-    """
-DEFAULT_CSS += f"#noentry {{ background-image: linear-gradient({LATTICED});}}"
-
-
-def read_saved_css() -> str:
-    """Load saved css as string."""
-    # no mechanism for change now,
-    # so return variable directly
-    return DEFAULT_CSS
-    try:  # read saved settings
-        with open(CSS_FILE, 'r') as file:
-            data = '\n'.join(file.readlines())
-    except FileNotFoundError:
-        # file doesn't exists yet
-        try:
-            with open(CSS_FILE, 'w') as file:
-                file.writelines(DEFAULT_CSS.split('\n'))
-            return read_saved_css()
-        except Exception:
-            # problem with writing file down
-            # not problem now, but it could be in future
-            # print("unable to save settings, unable remember changes!")
-            return DEFAULT_CSS
-    return data
+from pwtools import newrandompass, hash_it, extrachars
+from css_tools import read_saved_css
 
 
 class MyWindow(Gtk.Window):
@@ -98,9 +16,8 @@ class MyWindow(Gtk.Window):
         self.connect("event-after", self._checkout)  # for timeout
         try:  # no need to crash because of icon
             self.set_icon_from_file('tux4.png')
-        except Exception as ex:
+        except FileNotFoundError:
             print('icon (tux4.png) not found')
-            print(ex)
         self.set_size_request(200, 100)
         self.set_border_width(3)
         self._hashed = ''
@@ -185,7 +102,7 @@ class MyWindow(Gtk.Window):
         self._hide_pass.connect("toggled", self._hide_text, "main_page")
         self._startpage.attach(self._hide_pass, 1, 2, 1, 1)
 
-        self._wrong_pass = 0 # counter for invalid passwords
+        self._wrong_pass = 0  # counter for invalid passwords
 
     def _startpage_default(self):
         """Set first page to default values."""
@@ -552,7 +469,7 @@ class MyWindow(Gtk.Window):
         """
         Collects info about settings,
         sends it to password generator
-        and stores it to self._list_of_passwords.
+        and stores result to self._list_of_passwords.
         """
         lower = self._use_lowercase.get_active()
         upper = self._use_uppercase.get_active()
@@ -571,7 +488,9 @@ class MyWindow(Gtk.Window):
             # print(self._list_of_passwords)
             self._chosen_password.set_text(self._list_of_passwords[0])
             self._selected_password.set_value(0)
-            self._selected_password.set_range(0, len(self._list_of_passwords)-1)
+            self._selected_password.set_range(
+                0, len(self._list_of_passwords)-1
+            )
 
     def _show_pass(self, *_):
         text = ''
@@ -592,7 +511,9 @@ class MyWindow(Gtk.Window):
         button.connect("clicked", self._data_refresh)
         self._delete_password_page.pack_start(button, False, True, 1)
 
-        self._site_select_for_del = Gtk.ComboBox.new_with_model(self._data_store)
+        self._site_select_for_del = Gtk.ComboBox.new_with_model(
+                                        self._data_store
+                                    )
         self._data_iterators.append(self._site_select_for_del)
         self._site_select_for_del.connect('changed', self._display)
         renderer = Gtk.CellRendererText()
@@ -611,13 +532,13 @@ class MyWindow(Gtk.Window):
         self._user_for_del = Gtk.Label(label='self._user_for_del')
         self._usershows.append(self._user_for_del)
         self._delete_password_page.pack_start(
-                self._user_for_del, False, False, 0
-            )
+            self._user_for_del, False, False, 0
+        )
         self._pass_for_del = Gtk.Label(label='self._pass_for_del')
         self._passshows.append(self._pass_for_del)
         self._delete_password_page.pack_start(
-                self._pass_for_del, False, False, 0
-            )
+            self._pass_for_del, False, False, 0
+        )
 
     def _manage_entry(self, _, strinfo):
         if strinfo == 'delete_entry':
@@ -633,13 +554,15 @@ class MyWindow(Gtk.Window):
 
     def _manage_modify_page(self):
         self._modify_password_page = Gtk.Box(
-                            orientation=Gtk.Orientation.VERTICAL, spacing=6
-                            )
+            orientation=Gtk.Orientation.VERTICAL, spacing=6
+        )
         button = Gtk.Button(label='refresh')
         button.connect("clicked", self._data_refresh)
         self._modify_password_page.pack_start(button, False, True, 1)
 
-        self._site_select_for_edit = Gtk.ComboBox.new_with_model(self._data_store)
+        self._site_select_for_edit = Gtk.ComboBox.new_with_model(
+            self._data_store
+        )
         self._data_iterators.append(self._site_select_for_edit)
         self._site_select_for_edit.connect('changed', self._display)
         renderer = Gtk.CellRendererText()
@@ -744,7 +667,7 @@ class MyWindow(Gtk.Window):
             return
         return
 
-    def _edit_entry(self, widget, entry):
+    def _edit_entry(self, _, entry):
         """Manage editability of entries on edit page."""
         if self._site_select_for_edit.get_active_iter() is None:
             # if nothing selected, there is nothing to edit
@@ -770,9 +693,9 @@ class MyWindow(Gtk.Window):
 
     def _manage_read_pass_page(self):
         self._read_password_page = Gtk.Box(
-                orientation=Gtk.Orientation.VERTICAL,
-                spacing=6
-                )
+            orientation=Gtk.Orientation.VERTICAL,
+            spacing=6
+        )
         button = Gtk.Button(label='refresh')
         button.connect("clicked", self._data_refresh)
         self._read_password_page.pack_start(button, False, False, 0)
@@ -901,11 +824,9 @@ class MyWindow(Gtk.Window):
                 self._selected_password.set_range(
                     0, len(self._list_of_passwords)-1
                     )
-
         if self._data:
             del site_user_pass
         self._display('')
-        return
 
     def _display(self, widget):
         site, username, password = ('', '', '')
@@ -956,9 +877,8 @@ class MyWindow(Gtk.Window):
                 # correct password
                 self._hashed = result
                 self._data_refresh()
-                self._notebook.do_switch_page(
-                        self._notebook, self._passpage, 1
-                        )
+                self._notebook.set_current_page(1)
+                # self._passpage.set_current_page(self._generate_for)
                 self._startpage_default()
 
             elif result is None:
@@ -1000,7 +920,7 @@ class MyWindow(Gtk.Window):
 
 
 if __name__ == '__main__':
-    """  TBD : color theme change ; maybe through css """
+    # """  TBD : color theme change ; maybe through css """
     win = MyWindow()
     win.show_all()
     Gtk.main()
