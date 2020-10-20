@@ -21,7 +21,7 @@ def hash_it(mainpassword: str) -> str:  # mainpassword= str
     return hashlib.sha512(mainpassword.encode('utf-8')).hexdigest()
 
 
-def newpass(hashed, siteusps=None, add=True, delete=False, FILENAME=FILENAME):
+def newpass(hashed, siteusps=None, add=True, delete=False, filename=FILENAME):
     """
     Write password(s) to file.
 
@@ -38,8 +38,8 @@ def newpass(hashed, siteusps=None, add=True, delete=False, FILENAME=FILENAME):
         hashed = hashed[32:]
         keys.append(key)
     if delete:
-        remove(FILENAME)
-        open(FILENAME, 'w')
+        remove(filename)
+        open(filename, 'w')
         return
     if siteusps is not None:
         if not isinstance(siteusps, bytes):
@@ -59,17 +59,17 @@ def newpass(hashed, siteusps=None, add=True, delete=False, FILENAME=FILENAME):
         newline = fer.encrypt(siteusps)
 
         mode = 'a'if add else 'w'
-        with open(FILENAME, mode) as file:
+        with open(filename, mode) as file:
             file.write(f"{newline.decode('utf-8')}\n")
 
 
-def readfileraw(return_file=False, FILENAME=FILENAME):
+def readfileraw(return_file=False, filename=FILENAME):
     """Read plain file with stored info."""
     global FILELINES
     # if return_file or not FILELINES :
     try:
         # print(f"{FILELINES=}")
-        with open(FILENAME, "r") as file:
+        with open(filename, "r") as file:
             data = file.read()
         FILELINES = data.split('\n')
         if FILELINES == ['']:  # empty file
@@ -215,7 +215,7 @@ def decrypt(key, token):
     return decrypted_data
 
 
-def uncode(hashed, FILENAME=FILENAME):
+def uncode(hashed, filename=FILENAME):
     """Decode stored passwords."""
     # print(f"{thashed=}")
     if not hashed:
@@ -223,7 +223,7 @@ def uncode(hashed, FILENAME=FILENAME):
     if isinstance(hashed, str):
         hashed = hashed.encode('utf-8')
     keys = []
-    readfileraw(FILENAME=FILENAME)
+    readfileraw(filename=filename)
     for i in range(4):
         key = base64.urlsafe_b64encode(hashed[:32])
         hashed = hashed[32:]
@@ -252,7 +252,7 @@ def uncode(hashed, FILENAME=FILENAME):
     return result
 
 
-def readfile(hashed, full=False, FILENAME=FILENAME):
+def readfile(hashed, full=False, filename=FILENAME):
     """
     Manage reading and decoding file.
 
@@ -266,7 +266,7 @@ def readfile(hashed, full=False, FILENAME=FILENAME):
     global PASSHASH
     if not full:
         # checking if password works
-        fileexists = readfileraw()
+        fileexists = readfileraw(filename=filename)
         if not fileexists:
             # file doesn't exists
             # it is first use
@@ -281,14 +281,14 @@ def readfile(hashed, full=False, FILENAME=FILENAME):
         check = decrypt(key, token)
 
         return bool(check)
-    return uncode()
+    return uncode(filename=filename)
 
 
-def validate_password(password: str, FILENAME=FILENAME):
+def validate_password(password: str, filename=FILENAME):
     """Solely for checking if main password is ok."""
     password = password[::-1]
     hash2 = hash_it(password)
-    check = readfile(hash2, False, FILENAME=FILENAME)
+    check = readfile(hash2, False, filename=filename)
     if check is None:
         # file doesn't exists, password is being created now
         return None

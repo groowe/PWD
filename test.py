@@ -5,8 +5,12 @@ import hashlib
 import random
 from string import punctuation, digits
 from string import ascii_lowercase, ascii_uppercase
-from pwtools import hash_it, validatepass, extrachars, genpass
-from pwtools import newpass
+from pwtools import hash_it, validatepass, extrachars, genpass, decrypt
+from pwtools import newpass, readfileraw, newrandompass, uncode, readfile
+from pwtools import validate_password
+from os import remove
+
+FILENAME = 'test_safepasswords'
 
 extrachars = extrachars()
 l_string = [ascii_lowercase,
@@ -57,9 +61,27 @@ class Testpwtools(unittest.TestCase):
                 self.assertTrue(validatepass(value, l_s))
                 self.assertFalse(validatepass(value, l_string))
 
+    def test_validate_password(self):
+        self.assertEqual(validate_password('', filename=FILENAME), None)
+        self.assertEqual(validate_password('af', filename=FILENAME), None)
+
     def test_newpass(self):
         pass
 
+    def test_readfileraw(self):
+        pass
+
+    def test_newrandompass(self):
+        pass
+
+    def test_decrypt(self):
+        pass
+
+    def test_uncode(self):
+        pass
+
+    def test_readfile(self):
+        pass
 
 
 if __name__ == '__main__':
