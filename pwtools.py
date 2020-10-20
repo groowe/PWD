@@ -21,7 +21,7 @@ def hash_it(mainpassword: str) -> str:  # mainpassword= str
     return hashlib.sha512(mainpassword.encode('utf-8')).hexdigest()
 
 
-def newpass(hashed, siteusps=None, add=True, delete=False):
+def newpass(hashed, siteusps=None, add=True, delete=False, FILENAME=FILENAME):
     """
     Write password(s) to file.
 
@@ -63,7 +63,7 @@ def newpass(hashed, siteusps=None, add=True, delete=False):
             file.write(f"{newline.decode('utf-8')}\n")
 
 
-def readfileraw(return_file=False):
+def readfileraw(return_file=False, FILENAME=FILENAME):
     """Read plain file with stored info."""
     global FILELINES
     # if return_file or not FILELINES :
@@ -215,7 +215,7 @@ def decrypt(key, token):
     return decrypted_data
 
 
-def uncode(hashed):
+def uncode(hashed, FILENAME=FILENAME):
     """Decode stored passwords."""
     # print(f"{thashed=}")
     if not hashed:
@@ -223,7 +223,7 @@ def uncode(hashed):
     if isinstance(hashed, str):
         hashed = hashed.encode('utf-8')
     keys = []
-    readfileraw()
+    readfileraw(FILENAME=FILENAME)
     for i in range(4):
         key = base64.urlsafe_b64encode(hashed[:32])
         hashed = hashed[32:]
@@ -252,7 +252,7 @@ def uncode(hashed):
     return result
 
 
-def readfile(hashed, full=False):
+def readfile(hashed, full=False, FILENAME=FILENAME):
     """
     Manage reading and decoding file.
 
@@ -284,11 +284,11 @@ def readfile(hashed, full=False):
     return uncode()
 
 
-def validate_password(password: str):
+def validate_password(password: str, FILENAME=FILENAME):
     """Solely for checking if main password is ok."""
     password = password[::-1]
     hash2 = hash_it(password)
-    check = readfile(hash2, False)
+    check = readfile(hash2, False, FILENAME=FILENAME)
     if check is None:
         # file doesn't exists, password is being created now
         return None
