@@ -435,7 +435,7 @@ class MyWindow(Gtk.Window):
         # security of password with 8 length
         # with uppercase, lowercase, digit and special
         # is 94**8 = optimal 6095689385410816
-        optimal = 6095689385410816 * 100
+        optimal = 6095689385410816 * 10
         lower = self._use_lowercase.get_active()
         upper = self._use_uppercase.get_active()
         digits = self._use_digits.get_active()
@@ -457,7 +457,7 @@ class MyWindow(Gtk.Window):
         base += 26 if upper else 0
         base += 32 if specials else 0
         base += 10 if digits else 0
-        base += 48647 if extra else 0
+        base += 20 if extra else 0
 
         if base:  # if none selected, this would go FOREVER..
             while base**minpasslen < optimal:
@@ -873,7 +873,9 @@ class MyWindow(Gtk.Window):
 
     def _button_clicked(self, widget, strinfo):
         if strinfo == "password":
-            if result := validate_password(self._entry.get_text()):
+            if not (notempty := self._entry.get_text()):
+                return
+            if result := validate_password(notempty):
                 # correct password
                 self._hashed = result
                 self._data_refresh()

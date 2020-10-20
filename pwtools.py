@@ -286,6 +286,8 @@ def readfile(hashed, full=False, filename=FILENAME):
 
 def validate_password(password: str, filename=FILENAME):
     """Solely for checking if main password is ok."""
+    if not password or password == password[::-1]:
+        return False
     password = password[::-1]
     hash2 = hash_it(password)
     check = readfile(hash2, False, filename=filename)

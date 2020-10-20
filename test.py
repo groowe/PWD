@@ -18,7 +18,7 @@ l_string = [ascii_lowercase,
             punctuation,
             extrachars,
             digits]
-
+'some more unittests'
 
 class Testpwtools(unittest.TestCase):
 
@@ -62,7 +62,8 @@ class Testpwtools(unittest.TestCase):
                 self.assertFalse(validatepass(value, l_string))
 
     def test_validate_password(self):
-        self.assertEqual(validate_password('', filename=FILENAME), None)
+        self.assertEqual(validate_password('', filename=FILENAME), False)
+        self.assertEqual(validate_password('eaae', filename=FILENAME), False)
         self.assertEqual(validate_password('af', filename=FILENAME), None)
 
     def test_newpass(self):
