@@ -30,12 +30,13 @@ def newpass(hashed, siteusps=None, add=True, delete=False, filename=FILENAME):
     delete was added for ability to remove all passwords.
     if delete == True,delete file
     """
-    if isinstance(hashed, str):
-        hashed = hashed.encode('utf-8')
+
     # checking if hashed password is ok
     check = readfile(hashed, False, filename=filename)
     if check is False:
         return
+    if isinstance(hashed, str):
+        hashed = hashed.encode('utf-8')
     keys = []
     for i in range(4):
         key = base64.urlsafe_b64encode(hashed[:32])
