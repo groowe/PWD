@@ -204,16 +204,23 @@ def newrandompass(low=True, high=True,
 
 def decrypt(key, token):
     """Decrypt token with Fernet key."""
-    fer = Fernet(key)
+
     # print(f"{type(key)=}")
     # print(key)
     # print(token)
     # print(f"{type(token)=}")
     try:
+        fer = Fernet(key)
         decrypted_data = fer.decrypt(token)
     except InvalidToken:
         # wrong key
         return False
+    except TypeError:
+        # wrong key
+        return False
+    except ValueError:
+        return False
+
     except Exception as ex:
         print(f'{ex=} {type(ex)=}in decrypt function at {__file__}')
         return False

@@ -2,6 +2,7 @@
 import unittest
 
 import hashlib
+import base64
 import random
 from string import punctuation, digits
 from string import ascii_lowercase, ascii_uppercase
@@ -9,6 +10,7 @@ from pwtools import hash_it, validatepass, extrachars, genpass, decrypt
 from pwtools import newpass, readfileraw, newrandompass, uncode, readfile
 from pwtools import validate_password
 from os import remove
+from cryptography.fernet import Fernet
 
 FILENAME = 'test_safepasswords'
 
@@ -19,6 +21,7 @@ l_string = [ascii_lowercase,
             extrachars,
             digits]
 'some more unittests'
+
 
 class Testpwtools(unittest.TestCase):
 
@@ -99,9 +102,24 @@ class Testpwtools(unittest.TestCase):
         newpass(password, siteusps, filename=FILENAME)
         remove(FILENAME)
 
-
     def test_decrypt(self):
-        pass
+        hashed = hash_it('userpassword').encode('utf-8')
+        siteusps = '\t\t'.join(['site', 'user', 'password']).encode('utf-8')
+        key = base64.urlsafe_b64encode(hashed[:32])
+        fer = Fernet(key)
+        token = fer.encrypt(siteusps)
+        key_ = base64.urlsafe_b64encode(hashed[32:64])
+        fer_ = Fernet(key_)
+        token_ = fer_.encrypt(siteusps)
+
+        self.assertEqual(decrypt(key, token), siteusps)
+        self.assertEqual(decrypt(key_, token_), siteusps)
+        self.assertFalse(decrypt(key_, token))
+        self.assertFalse(decrypt(key, token_))
+        self.assertFalse(decrypt('\t\t', token_))
+        self.assertFalse(decrypt(key, '\t\t'))
+        self.assertFalse(decrypt('\t\t', '\t\t'))
+        self.assertRaises(TypeError, decrypt)
 
     def test_uncode(self):
         pass
