@@ -61,19 +61,44 @@ class Testpwtools(unittest.TestCase):
                 self.assertTrue(validatepass(value, l_s))
                 self.assertFalse(validatepass(value, l_string))
 
+    def test_newrandompass(self):
+        vars_ = [newrandompass(low=False),
+                 newrandompass(high=False),
+                 newrandompass(specials=False),
+                 newrandompass(extra=False),
+                 newrandompass(use_digits=False)]
+        for var, ls in zip(vars_, l_string):
+            l_s = [value for value in l_string if value != ls]
+            self.assertEqual(len(var), 10)
+            for data in var:
+                self.assertTrue(validatepass(data, l_s))
+                self.assertTrue(10 <= len(data) <= 20)
+                self.assertFalse(validatepass(data, l_string))
+
+    def test_readfileraw(self):
+        self.assertFalse(readfileraw(filename=FILENAME))
+        info = "plain file"
+        with open(FILENAME, 'w') as file:
+            file.write(info)
+        self.assertTrue(readfileraw(filename=FILENAME))
+        self.assertEqual(readfileraw(return_file=True, filename=FILENAME),
+                         [info])
+        remove(FILENAME)
+
     def test_validate_password(self):
+        if readfileraw(filename=FILENAME):
+            remove(FILENAME)
+
         self.assertEqual(validate_password('', filename=FILENAME), False)
         self.assertEqual(validate_password('eaae', filename=FILENAME), False)
         self.assertEqual(validate_password('af', filename=FILENAME), None)
 
     def test_newpass(self):
-        pass
+        siteusps = ['site', 'user', 'password']
+        password = hash_it('userpassword')
+        newpass(password, siteusps, filename=FILENAME)
+        remove(FILENAME)
 
-    def test_readfileraw(self):
-        pass
-
-    def test_newrandompass(self):
-        pass
 
     def test_decrypt(self):
         pass

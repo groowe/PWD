@@ -32,6 +32,10 @@ def newpass(hashed, siteusps=None, add=True, delete=False, filename=FILENAME):
     """
     if isinstance(hashed, str):
         hashed = hashed.encode('utf-8')
+    # checking if hashed password is ok
+    check = readfile(hashed, False, filename=filename)
+    if check is False:
+        return
     keys = []
     for i in range(4):
         key = base64.urlsafe_b64encode(hashed[:32])
@@ -39,8 +43,8 @@ def newpass(hashed, siteusps=None, add=True, delete=False, filename=FILENAME):
         keys.append(key)
     if delete:
         remove(filename)
-        open(filename, 'w')
-        return
+        with open(filename, 'w') as file:
+            return
     if siteusps is not None:
         if not isinstance(siteusps, bytes):
             if not isinstance(siteusps, str):
@@ -109,7 +113,7 @@ def validatepass(password, lists):
 
 def genpass(lists, minlen, maxlen):
     """
-    Generate random password.
+    Generate 10 random passwords.
 
     lists with chars needed to be used
     lists = ['adad','ASDASD','13213']
@@ -190,6 +194,7 @@ def newrandompass(low=True, high=True,
     # 94**8 = 6095689385410816 = 6.095689e+15
     if extra:
         use_chars.append(extrachars())
+
     # if used all, it is 48741 characters
     # that would be for password with length 8 characters
     # 48741**8 = 31853376985417679534107315657041386721 ==  3.185338e+37
@@ -284,12 +289,16 @@ def readfile(hashed, full=False, filename=FILENAME):
     return uncode(filename=filename)
 
 
-def validate_password(password: str, filename=FILENAME):
+def validate_password(password: str, filename=FILENAME, hashed=False):
     """Solely for checking if main password is ok."""
     if not password or password == password[::-1]:
         return False
-    password = password[::-1]
-    hash2 = hash_it(password)
+
+    if not hashed:
+        password = password[::-1]
+        hash2 = hash_it(password)
+    else:
+        hash2 = password
     check = readfile(hash2, False, filename=filename)
     if check is None:
         # file doesn't exists, password is being created now
