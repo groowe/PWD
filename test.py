@@ -6,11 +6,13 @@ import base64
 import random
 from string import punctuation, digits
 from string import ascii_lowercase, ascii_uppercase
+from os import remove
+from cryptography.fernet import Fernet
+
 from pwtools import hash_it, validatepass, extrachars, genpass, decrypt
 from pwtools import newpass, readfileraw, newrandompass, uncode, readfile
 from pwtools import validate_password
-from os import remove
-from cryptography.fernet import Fernet
+
 
 FILENAME = 'test_safepasswords'
 
@@ -88,20 +90,6 @@ class Testpwtools(unittest.TestCase):
                          [info])
         remove(FILENAME)
 
-    def test_validate_password(self):
-        if readfileraw(filename=FILENAME):
-            remove(FILENAME)
-
-        self.assertEqual(validate_password('', filename=FILENAME), False)
-        self.assertEqual(validate_password('eaae', filename=FILENAME), False)
-        self.assertEqual(validate_password('af', filename=FILENAME), None)
-
-    def test_newpass(self):
-        siteusps = ['site', 'user', 'password']
-        password = hash_it('userpassword')
-        newpass(password, siteusps, filename=FILENAME)
-        remove(FILENAME)
-
     def test_decrypt(self):
         hashed = hash_it('userpassword').encode('utf-8')
         siteusps = '\t\t'.join(['site', 'user', 'password']).encode('utf-8')
@@ -122,10 +110,79 @@ class Testpwtools(unittest.TestCase):
         self.assertRaises(TypeError, decrypt)
 
     def test_uncode(self):
-        pass
+        self.assertRaises(TypeError, uncode)
+        self.assertRaises(SystemExit, uncode, '\t\t', filename=FILENAME)
+        new = self.password_to_file()
+
+        # passw = new['password']
+        siteusps = new['siteusps']
+        hashed = new['hashed']
+        self.assertEqual(uncode(hashed, filename=FILENAME), siteusps)
+        if readfileraw(filename=FILENAME):
+            remove(FILENAME)
 
     def test_readfile(self):
-        pass
+        self.assertRaises(TypeError, readfile)
+        new = self.password_to_file()
+
+        passw = new['password']
+        siteusps = new['siteusps']
+        hashed = new['hashed']
+        self.assertFalse(readfile(passw, full=False, filename=FILENAME))
+        self.assertTrue(readfile(hashed, full=False, filename=FILENAME))
+        self.assertEqual(readfile(hashed, full=True, filename=FILENAME),
+                                  siteusps)
+        if readfileraw(filename=FILENAME):
+            remove(FILENAME)
+
+    def test_validate_password(self):
+        if readfileraw(filename=FILENAME):
+            remove(FILENAME)
+
+        self.assertEqual(validate_password('', filename=FILENAME), False)
+        self.assertEqual(validate_password('eaae', filename=FILENAME), False)
+        self.assertEqual(validate_password('af', filename=FILENAME), None)
+
+    def test_newpass(self):
+        if readfileraw(filename=FILENAME):
+            remove(FILENAME)
+        new = self.password_to_file()
+
+        # passw = new['password']
+        siteusps = new['siteusps']
+        hashed = new['hashed']
+        new_ps = newrandompass()
+
+        for ps in new_ps:
+            siteusps_ = ['site', 'user', ps]
+            newpass(hashed, siteusps_, filename=FILENAME)
+            siteusps.append('\t\t'.join(siteusps_))
+            self.assertEqual(readfile(hashed, full=True, filename=FILENAME),
+                             siteusps)
+        newpass(hashed, delete=True, filename=FILENAME)
+        remove(FILENAME)
+
+    def password_to_file(self, filename=FILENAME):
+        if readfileraw(filename=filename):
+            remove(filename)
+        passw = random.choice(newrandompass())
+        hashed = hash_it(passw)
+        siteusps = ['\t\t'.join(['site', 'user', 'password'])*10]
+        keys = []
+        for i in range(4):
+            key = base64.urlsafe_b64encode(
+                    hashed[i*32:(i+1)*32].encode('utf-8')
+                    )
+            keys.append(key)
+
+        fers = [Fernet(key)for key in keys]
+
+        for i, siteusp in enumerate(siteusps):
+            fer = fers[i % 4]
+            newline = fer.encrypt(siteusp.encode('utf-8'))
+            with open(filename, 'a') as file:
+                file.write(f"{newline.decode('utf-8')}\n")
+        return {'password': passw, 'siteusps': siteusps, 'hashed': hashed}
 
 
 if __name__ == '__main__':

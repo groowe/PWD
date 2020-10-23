@@ -35,6 +35,10 @@ def newpass(hashed, siteusps=None, add=True, delete=False, filename=FILENAME):
     check = readfile(hashed, False, filename=filename)
     if check is False:
         return
+    if delete:
+        remove(filename)
+        with open(filename, 'w') as file:
+            return
     if isinstance(hashed, str):
         hashed = hashed.encode('utf-8')
     keys = []
@@ -42,18 +46,18 @@ def newpass(hashed, siteusps=None, add=True, delete=False, filename=FILENAME):
         key = base64.urlsafe_b64encode(hashed[:32])
         hashed = hashed[32:]
         keys.append(key)
-    if delete:
-        remove(filename)
-        with open(filename, 'w') as file:
-            return
+
     if siteusps is not None:
         if not isinstance(siteusps, bytes):
             if not isinstance(siteusps, str):
                 siteusps = '\t\t'.join(siteusps)
             siteusps = siteusps.encode('utf-8')
         # get number of lines already written
-        already = readfileraw(return_file=True)
-        if not already or not add:
+        mode = 'a'
+        if not add:
+            mode = 'w'
+            keyindex = 0
+        elif not (already := readfileraw(return_file=True, filename=filename)):
             keyindex = 0
         else:
             for line in already:
@@ -63,7 +67,6 @@ def newpass(hashed, siteusps=None, add=True, delete=False, filename=FILENAME):
         fer = Fernet(keys[keyindex])
         newline = fer.encrypt(siteusps)
 
-        mode = 'a'if add else 'w'
         with open(filename, mode) as file:
             file.write(f"{newline.decode('utf-8')}\n")
 
@@ -258,8 +261,10 @@ def uncode(hashed, filename=FILENAME):
             raw = raw.decode('utf-8')
         except AttributeError as exception:
             # this should NEVER happen
-            print(f"error in logic (uncode function at {__file__})")
-            print(exception)
+            # print(f'{hashed=}')
+            if hashed != b'':
+                print(f"error in logic (uncode function at {__file__})")
+                print(exception)
             raise SystemExit
         result.append(raw)
     return result
@@ -294,7 +299,7 @@ def readfile(hashed, full=False, filename=FILENAME):
         check = decrypt(key, token)
 
         return bool(check)
-    return uncode(filename=filename)
+    return uncode(hashed, filename=filename)
 
 
 def validate_password(password: str, filename=FILENAME, hashed=False):
@@ -308,11 +313,9 @@ def validate_password(password: str, filename=FILENAME, hashed=False):
     else:
         hash2 = password
     check = readfile(hash2, False, filename=filename)
-    if check is None:
-        # file doesn't exists, password is being created now
-        return None
-    if not check:
-        # wrong password
-        return False
+    if check in (None, False):
+        # None: file doesn't exists, password is being created now
+        # False: wrong password
+        return check
     # good password,return its hash
     return hash2
