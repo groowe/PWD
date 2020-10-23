@@ -8,11 +8,13 @@ from pwtools import validate_password, uncode, newpass
 from pwtools import newrandompass, hash_it, extrachars
 from css_tools import read_saved_css
 
+FILENAME = 'safepasswords'  # name of file where data are stored
 
 class MyWindow(Gtk.Window):
-    def __init__(self):
+    def __init__(self, file_=FILENAME):
         Gtk.Window.__init__(self, title="password manager")
         self.connect("destroy", Gtk.main_quit)
+        self.file_ = file_
         self.connect("event-after", self._checkout)  # for timeout
         try:  # no need to crash because of icon
             self.set_icon_from_file('tux4.png')
@@ -62,10 +64,12 @@ class MyWindow(Gtk.Window):
     def _on_timeout(self, *_):
         """Update value on the progress bar."""
         new_value = self._progressbar.get_fraction() + 0.001
+        self._progressbar.set_fraction(new_value)
         if new_value >= 1:
             # kill .. maybe make it optional?.. nah
             Gtk.main_quit()
-        self._progressbar.set_fraction(new_value)
+            raise SystemExit
+            
         return True
 
     def _set_css(self):
@@ -256,7 +260,7 @@ class MyWindow(Gtk.Window):
             icon.set_icon_name(empty)
             if entry.get_text():
                 if entry is self._old_pass:
-                    result = validate_password(entry.get_text())
+                    result = validate_password(entry.get_text(), filename=self.file_)
                     icon.set_icon_name(ok_icon if result else ng_icon)
                 else:
                     text1 = self._new_pass.get_text()
@@ -271,7 +275,7 @@ class MyWindow(Gtk.Window):
         """Save all data in memory to file."""
         add = False  # overwrite existing
         for record in self._data:
-            newpass(self._hashed, record, add)
+            newpass(self._hashed, record, add, filename=self.file_)
             if not add:
                 add = True  # append
 
@@ -281,7 +285,7 @@ class MyWindow(Gtk.Window):
         old = self._old_pass.get_text()
         new = self._new_pass.get_text()
         new2 = self._new_pass_2.get_text()
-        if validate_password(old):  # correct old password
+        if validate_password(old, filename=self.file_):  # correct old password
             if new and new2:       # new password is not empty
                 # both are the same and not old password
                 if new == new2 != old:
@@ -547,7 +551,7 @@ class MyWindow(Gtk.Window):
                     self._data.pop(self._data.index(todelete))
                     if not self._data:
                         # no passwords left
-                        newpass(self._hashed, delete=True)
+                        newpass(self._hashed, delete=True, filename=self.file_)
                     self._save_all_passwords()
 
                 self._data_refresh()
@@ -811,7 +815,7 @@ class MyWindow(Gtk.Window):
                 self._last_entry_username = ""
 
     def _data_refresh(self, *args):
-        self._data = uncode(self._hashed)
+        self._data = uncode(self._hashed, filename=self.file_)
         self._data_store.clear()
         self._set_not_editable()  # edit entries
 
@@ -875,7 +879,7 @@ class MyWindow(Gtk.Window):
         if strinfo == "password":
             if not (notempty := self._entry.get_text()):
                 return
-            if result := validate_password(notempty):
+            if result := validate_password(notempty, filename=self.file_):
                 # correct password
                 self._hashed = result
                 self._data_refresh()
@@ -914,7 +918,7 @@ class MyWindow(Gtk.Window):
             password = self._entry_password.get_text().strip()
             # only proceed if all cells are filled
             if site and username and password:
-                newpass(self._hashed, [site, username, password], add=True)
+                newpass(self._hashed, [site, username, password], add=True, filename=self.file_)
                 self._entry_username.set_text('')
                 self._entry_password.set_text('')
                 self._entry_page.set_text('')

@@ -12,7 +12,11 @@ from cryptography.fernet import Fernet
 from pwtools import hash_it, validatepass, extrachars, genpass, decrypt
 from pwtools import newpass, readfileraw, newrandompass, uncode, readfile
 from pwtools import validate_password
+from new_gen import MyWindow
 
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, GLib, Gdk
 
 FILENAME = 'test_safepasswords'
 
@@ -182,6 +186,25 @@ class Testpwtools(unittest.TestCase):
             with open(filename, 'a') as file:
                 file.write(f"{newline.decode('utf-8')}\n")
         return {'password': passw, 'siteusps': siteusps, 'hashed': hashed}
+
+
+class TestMyWindow(unittest.TestCase):
+    def test_progressbar(self):
+        win = MyWindow(file_=FILENAME)
+        win.show_all()
+        # Gtk.main()
+        self.assertEqual(win._progressbar.get_fraction(), 0.0)
+        win._progressbar.set_fraction(0.5)
+        self.assertEqual(win._progressbar.get_fraction(), 0.5)
+        self.assertTrue(win._on_timeout())
+        self.assertEqual(win._progressbar.get_fraction(), 0.501)
+        win._progressbar.set_fraction(0.999)
+        # self.assertRaises(ValueError, win._on_timeout)
+        # print("expecting following error:")
+        # print("Gtk-CRITICAL ** gtk_main_quit: assertion 'main_loops != NULL' failed")
+        self.assertRaises(Gtk-CRITICAL, win._on_timeout)
+        self.assertRaises(SystemExit, win._on_timeout)
+        # self.assertEqual(win._progressbar.get_fraction(), 1)
 
 
 if __name__ == '__main__':
