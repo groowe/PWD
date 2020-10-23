@@ -26,7 +26,6 @@ l_string = [ascii_lowercase,
 
 
 class Testpwtools(unittest.TestCase):
-
     def test_hash_it(self):
         for value in l_string:
             passw = ''.join(random.choices(value, k=random.randint(20, 100)))
@@ -113,7 +112,6 @@ class Testpwtools(unittest.TestCase):
         self.assertRaises(TypeError, uncode)
         self.assertRaises(SystemExit, uncode, '\t\t', filename=FILENAME)
         new = self.password_to_file()
-
         # passw = new['password']
         siteusps = new['siteusps']
         hashed = new['hashed']
@@ -131,14 +129,13 @@ class Testpwtools(unittest.TestCase):
         self.assertFalse(readfile(passw, full=False, filename=FILENAME))
         self.assertTrue(readfile(hashed, full=False, filename=FILENAME))
         self.assertEqual(readfile(hashed, full=True, filename=FILENAME),
-                                  siteusps)
+                         siteusps)
         if readfileraw(filename=FILENAME):
             remove(FILENAME)
 
     def test_validate_password(self):
         if readfileraw(filename=FILENAME):
             remove(FILENAME)
-
         self.assertEqual(validate_password('', filename=FILENAME), False)
         self.assertEqual(validate_password('eaae', filename=FILENAME), False)
         self.assertEqual(validate_password('af', filename=FILENAME), None)
@@ -147,7 +144,6 @@ class Testpwtools(unittest.TestCase):
         if readfileraw(filename=FILENAME):
             remove(FILENAME)
         new = self.password_to_file()
-
         # passw = new['password']
         siteusps = new['siteusps']
         hashed = new['hashed']
@@ -159,7 +155,10 @@ class Testpwtools(unittest.TestCase):
             siteusps.append('\t\t'.join(siteusps_))
             self.assertEqual(readfile(hashed, full=True, filename=FILENAME),
                              siteusps)
-        newpass(hashed, delete=True, filename=FILENAME)
+        self.assertEqual(newpass(hashed, delete=True, filename=FILENAME),
+                         None)
+        self.assertFalse(newpass('tfds', filename=FILENAME))
+
         remove(FILENAME)
 
     def password_to_file(self, filename=FILENAME):
