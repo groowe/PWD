@@ -236,10 +236,47 @@ class TestMyWindow(unittest.TestCase):
         self.assertEqual(win._entry.get_text(), passw)
         self.assertEqual(win._hashed, '')
         # win._button_clicked(win._entry, "password")
+        self.assertEqual(win._notebook.get_n_pages(), 2)
+        # self.assertEqual(win._notebook.get_current_page(), -1)
+
         win._button.clicked()
         self.assertTrue(refresh_gui())
         self.assertEqual(win._hashed, hashed)
         self.assertEqual(win._data, siteusps)
+        # self.assertEqual(win._notebook.get_current_page(), -1)
+
+    def test_pass_add_pass_page(self):
+
+        win = MyWindow(file_=FILENAME)
+        data = password_to_file()
+        self.assertEqual(win._passpage.get_n_pages(), 6)
+        passw = data['password']
+        siteusps = data['siteusps']
+        hashed = data['hashed']
+        win._entry.set_text(passw)
+        win._button.clicked()
+        self.assertTrue(refresh_gui())
+        self.assertEqual(win._data, siteusps)
+        self.assertEqual(win._entry_username.get_text(),
+                         win._entry_page.get_text())
+        self.assertEqual(win._entry_password.get_text(),
+                         win._entry_page.get_text())
+        self.assertEqual(win._entry_password.get_text(), '')
+        win._entry_page.set_text('123')
+        win._entry_password.set_text('456')
+        # win._last_entry_username = ""
+        save_button = win._add_password_page.get_child_at(0, 0)
+        save_button.clicked()
+        self.assertTrue(refresh_gui())
+        self.assertEqual(win._data, siteusps)
+        win._entry_username.set_text('789')
+        save_button.clicked()
+        self.assertTrue(refresh_gui())
+        self.assertFalse(win._data == siteusps)
+        siteusps.append('123\t\t789\t\t456')
+        self.assertEqual(win._data, siteusps)
+        # self.assertEqual(win._passpage.get_current_page(), -1)
+
 
 
 if __name__ == '__main__':

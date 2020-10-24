@@ -765,6 +765,7 @@ class MyWindow(Gtk.Window):
         self._add_password_page.attach(self._entry_page, 1, 1, 2, 1)
         label_username = Gtk.Label(label="<b>username</b>", use_markup=True)
         self._entry_username = Gtk.Entry()
+        self._last_entry_username = ''
         self._entry_username.connect(
             "activate", self._button_clicked, "create_pw"
             )
@@ -879,17 +880,11 @@ class MyWindow(Gtk.Window):
         self._passpage.set_current_page(4)
 
     def _button_clicked(self, widget, strinfo):
-        # print(f"{strinfo=}")
-        # print(f"{self._entry.get_text()=}")
-        # print(f"{self.file_}")
         if strinfo == "password":
             if not (notempty := self._entry.get_text()):
                 return
             # print(f"{notempty=}")
             if result := validate_password(notempty, filename=self.file_):
-                # correct password
-                # print("correct password")
-                # print(f"{result=}")
                 self._hashed = result
                 self._data_refresh()
                 self._notebook.set_current_page(1)
