@@ -306,7 +306,7 @@ def validate_password(password: str, filename=FILENAME, hashed=False):
     """Solely for checking if main password is ok."""
     if not password or password == password[::-1]:
         return False
-
+    # print(f"{password=}")
     if not hashed:
         password = password[::-1]
         hash2 = hash_it(password)
@@ -316,6 +316,10 @@ def validate_password(password: str, filename=FILENAME, hashed=False):
     if check in (None, False):
         # None: file doesn't exists, password is being created now
         # False: wrong password
+        # print("validate_password: wrong password")
+        # print(f"{filename=}")
+        # print(f"{password=}")
+        # print(f"{hash2=}")
         return check
     # good password,return its hash
     return hash2

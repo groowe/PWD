@@ -4,6 +4,7 @@ import unittest
 import hashlib
 import base64
 import random
+import time
 from string import punctuation, digits
 from string import ascii_lowercase, ascii_uppercase
 from os import remove
@@ -27,6 +28,31 @@ l_string = [ascii_lowercase,
             extrachars,
             digits]
 'some more unittests'
+
+
+
+def password_to_file(filename=FILENAME):
+
+    passw = random.choice(newrandompass())
+    hashed = hash_it(passw)
+    siteusps = ['\t\t'.join(['site', 'user', 'password'])]*10
+    keys = []
+    for i in range(4):
+        key = base64.urlsafe_b64encode(
+                hashed[i*32:(i+1)*32].encode('utf-8')
+                )
+        keys.append(key)
+
+    fers = [Fernet(key)for key in keys]
+    new = True
+    for i, siteusp in enumerate(siteusps):
+        fer = fers[i % 4]
+        newline = fer.encrypt(siteusp.encode('utf-8'))
+        with open(filename, 'w' if new else 'a') as file:
+            file.write(f"{newline.decode('utf-8')}\n")
+        if new:
+            new = False
+    return {'password': passw[::-1], 'siteusps': siteusps, 'hashed': hashed}
 
 
 class Testpwtools(unittest.TestCase):
@@ -115,7 +141,7 @@ class Testpwtools(unittest.TestCase):
     def test_uncode(self):
         self.assertRaises(TypeError, uncode)
         self.assertRaises(SystemExit, uncode, '\t\t', filename=FILENAME)
-        new = self.password_to_file()
+        new = password_to_file()
         # passw = new['password']
         siteusps = new['siteusps']
         hashed = new['hashed']
@@ -125,7 +151,7 @@ class Testpwtools(unittest.TestCase):
 
     def test_readfile(self):
         self.assertRaises(TypeError, readfile)
-        new = self.password_to_file()
+        new = password_to_file()
 
         passw = new['password']
         siteusps = new['siteusps']
@@ -147,7 +173,7 @@ class Testpwtools(unittest.TestCase):
     def test_newpass(self):
         if readfileraw(filename=FILENAME):
             remove(FILENAME)
-        new = self.password_to_file()
+        new = password_to_file()
         # passw = new['password']
         siteusps = new['siteusps']
         hashed = new['hashed']
@@ -162,36 +188,23 @@ class Testpwtools(unittest.TestCase):
         self.assertEqual(newpass(hashed, delete=True, filename=FILENAME),
                          None)
         self.assertFalse(newpass('tfds', filename=FILENAME))
-
         remove(FILENAME)
 
-    def password_to_file(self, filename=FILENAME):
-        if readfileraw(filename=filename):
-            remove(filename)
-        passw = random.choice(newrandompass())
-        hashed = hash_it(passw)
-        siteusps = ['\t\t'.join(['site', 'user', 'password'])*10]
-        keys = []
-        for i in range(4):
-            key = base64.urlsafe_b64encode(
-                    hashed[i*32:(i+1)*32].encode('utf-8')
-                    )
-            keys.append(key)
 
-        fers = [Fernet(key)for key in keys]
-
-        for i, siteusp in enumerate(siteusps):
-            fer = fers[i % 4]
-            newline = fer.encrypt(siteusp.encode('utf-8'))
-            with open(filename, 'a') as file:
-                file.write(f"{newline.decode('utf-8')}\n")
-        return {'password': passw, 'siteusps': siteusps, 'hashed': hashed}
-
+# Stolen from Kiwi
+# https://unpythonic.blogspot.com/2007/03/unit-testing-pygtk.html
+def refresh_gui(delay=0):
+    while Gtk.events_pending():
+        # Gtk.main_iteration_do(block=False)
+        Gtk.main_iteration_do(False)
+        # print(0)
+    time.sleep(delay)
+    return True
 
 class TestMyWindow(unittest.TestCase):
     def test_progressbar(self):
         win = MyWindow(file_=FILENAME)
-        win.show_all()
+        # win.show_all()
         # Gtk.main()
         self.assertEqual(win._progressbar.get_fraction(), 0.0)
         win._progressbar.set_fraction(0.5)
@@ -200,11 +213,33 @@ class TestMyWindow(unittest.TestCase):
         self.assertEqual(win._progressbar.get_fraction(), 0.501)
         win._progressbar.set_fraction(0.999)
         # self.assertRaises(ValueError, win._on_timeout)
-        # print("expecting following error:")
-        # print("Gtk-CRITICAL ** gtk_main_quit: assertion 'main_loops != NULL' failed")
-        self.assertRaises(Gtk-CRITICAL, win._on_timeout)
+        print("expecting following error:")
+        print("Gtk-CRITICAL ** gtk_main_quit: assertion 'main_loops != NULL' failed")
+        # self.assertRaises(Gtk-CRITICAL, win._on_timeout)
         self.assertRaises(SystemExit, win._on_timeout)
         # self.assertEqual(win._progressbar.get_fraction(), 1)
+
+    def test_main_page(self):
+        win = MyWindow(file_=FILENAME)
+        self.assertEqual(win.file_, FILENAME)
+        self.assertEqual(win._entry.get_text(), "password")
+        self.assertTrue(win._hide_pass.get_active())
+        self.assertFalse(win._entry.get_visibility())
+        self.assertFalse(win._data_refresh())
+        data = password_to_file()
+        self.assertTrue(readfileraw(filename=FILENAME))
+        # print(f'{data=}')
+        passw = data['password']
+        siteusps = data['siteusps']
+        hashed = data['hashed']
+        win._entry.set_text(passw)
+        self.assertEqual(win._entry.get_text(), passw)
+        self.assertEqual(win._hashed, '')
+        # win._button_clicked(win._entry, "password")
+        win._button.clicked()
+        self.assertTrue(refresh_gui())
+        self.assertEqual(win._hashed, hashed)
+        self.assertEqual(win._data, siteusps)
 
 
 if __name__ == '__main__':

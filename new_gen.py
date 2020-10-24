@@ -69,7 +69,7 @@ class MyWindow(Gtk.Window):
             # kill .. maybe make it optional?.. nah
             Gtk.main_quit()
             raise SystemExit
-            
+
         return True
 
     def _set_css(self):
@@ -815,7 +815,10 @@ class MyWindow(Gtk.Window):
                 self._last_entry_username = ""
 
     def _data_refresh(self, *args):
-        self._data = uncode(self._hashed, filename=self.file_)
+        data = uncode(self._hashed, filename=self.file_)
+        if data is None:
+            return False
+        self._data = data
         self._data_store.clear()
         self._set_not_editable()  # edit entries
 
@@ -876,11 +879,17 @@ class MyWindow(Gtk.Window):
         self._passpage.set_current_page(4)
 
     def _button_clicked(self, widget, strinfo):
+        # print(f"{strinfo=}")
+        # print(f"{self._entry.get_text()=}")
+        # print(f"{self.file_}")
         if strinfo == "password":
             if not (notempty := self._entry.get_text()):
                 return
+            # print(f"{notempty=}")
             if result := validate_password(notempty, filename=self.file_):
                 # correct password
+                # print("correct password")
+                # print(f"{result=}")
                 self._hashed = result
                 self._data_refresh()
                 self._notebook.set_current_page(1)
@@ -889,6 +898,7 @@ class MyWindow(Gtk.Window):
 
             elif result is None:
                 # no password in use
+                print(f"{result=}")
                 self._description1.set_markup(
                     "<b>enter again for confirmation</b>"
                     )
@@ -896,6 +906,7 @@ class MyWindow(Gtk.Window):
                 self._entry.grab_focus_without_selecting()
             elif not result:
                 # wrong password
+                # print(f"{result=}")
                 self._wrong_pass += 1
                 if self._wrong_pass > 2:
                     # three tries tops
