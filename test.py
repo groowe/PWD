@@ -277,6 +277,37 @@ class TestMyWindow(unittest.TestCase):
         self.assertEqual(win._data, siteusps)
         # self.assertEqual(win._passpage.get_current_page(), -1)
 
+    def test_pass_read_pass_page(self):
+        win = MyWindow(file_=FILENAME)
+        data = password_to_file()
+        passw = data['password']
+        siteusps = data['siteusps']
+        hashed = data['hashed']
+        win._entry.set_text(passw)
+        win._button.clicked()
+        self.assertTrue(refresh_gui())
+        children = win._read_password_page.get_children()
+        refresh_button = children[0]
+        # print(children)
+        shows = [win._data_iterators,
+                 win._usershows,
+                 win._passshows]
+        self.assertEqual(shows[0][0].get_active_iter(), None)
+        self.assertEqual(win._counter_label.get_text(), f"{len(win._data)} passwords")
+        print(siteusps)
+        for ii, siteup in enumerate(siteusps):
+            shows[0][0].set_active(ii)
+            active_iter = shows[0][0].get_active_iter()
+            siteusp = siteup.split('\t\t')
+
+            for i, show in enumerate(shows):
+                for sh in show:
+                    if isinstance(sh, gi.repository.Gtk.ComboBox):
+                        self.assertEqual(sh.get_active(), ii)
+                    elif i < 2 or (i == 2 and isinstance(sh, gi.repository.Gtk.Entry)):
+                        self.assertEqual(sh.get_text(), siteusp[i])
+                    else:
+                        self.assertEqual(sh.get_text(), f"{siteusp[i][:20]}{'...' if len(siteusp[i]) > 20 else ''}")
 
 
 if __name__ == '__main__':
