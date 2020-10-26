@@ -406,7 +406,17 @@ class TestMyWindow(unittest.TestCase):
         generate_button = hbox[0]
         password_entry = hbox[1]
         password_button = hbox[2]
+        sup_entry = [site_entry, user_entry, password_entry]
+        sup_button = [site_button, user_button, password_button]
+
+
         self.assertEqual(selector_combobox.get_active(), -1)
+
+        self.assertTrue('return' in reset_button.get_label())
+        self.assertTrue('save' in save_button.get_label())
+        self.assertTrue('generate' in generate_button.get_label())
+
+        avail_passes = []
         for i in range(100):
             iter_ = random.randint(0, len(self.win._data)-1)
             selector_combobox.set_active(iter_)
@@ -419,6 +429,47 @@ class TestMyWindow(unittest.TestCase):
             self.assertFalse(user_entry.get_editable())
             self.assertFalse(password_entry.get_editable())
 
+            # changing part
+
+            sup = random.randint(0, 2)
+            if not avail_passes:
+                avail_passes.extend(newrandompass())
+
+            new_string = avail_passes.pop()
+
+            sup_button[sup].clicked()
+            refresh_gui()
+            for i, entry in enumerate(sup_entry):
+                self.assertEqual(entry.get_editable(), i == sup)
+
+            sup_entry[sup].set_text(new_string)
+            refresh_gui()
+
+            self.assertEqual(sup_entry[sup].get_text(), new_string)
+            self.assertFalse(sup_entry[sup].get_text() == siteusp[sup])
+
+            reset_button.clicked()
+            refresh_gui()
+            self.assertEqual(sup_entry[sup].get_text(), siteusp[sup])
+            self.assertFalse(sup_entry[sup].get_text() == new_string)
+
+            sup_entry[sup].set_text(new_string)
+            refresh_gui()
+
+            save_button.clicked()
+            refresh_gui()
+
+            for entry in sup_entry:
+                self.assertEqual(entry.get_text(), '')
+
+            self.assertFalse(self.win._data == self.siteusps)
+            siteusp[sup] = new_string
+            self.siteusps[iter_] = '\t\t'.join(siteusp)
+            # print(f'{self.win._data[iter_]=}')
+            # print(f'{self.siteusps[iter_]=}')
+            self.assertTrue(self.win._data == self.siteusps)
+
+        # TBD: add here test for generate_button
 
     def test_generate_pass_page(self):
         print(f"running {function_name()} {COUNTER}")
