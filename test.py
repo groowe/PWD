@@ -233,6 +233,7 @@ def refresh_gui(delay=0):
     time.sleep(delay)
     return True
 
+
 class TestMyWindow(unittest.TestCase):
     def setUp(self):
         # print(f"running {function_name()} {COUNTER}")
@@ -262,8 +263,6 @@ class TestMyWindow(unittest.TestCase):
     def test_progressbar(self):
         print(f"running {function_name()} {COUNTER}")
 
-        # self.win.show_all()
-        # Gtk.main()
         self.assertEqual(self.win._progressbar.get_fraction(), 0.0)
         self.win._progressbar.set_fraction(0.5)
         self.assertEqual(self.win._progressbar.get_fraction(), 0.5)
@@ -367,7 +366,7 @@ class TestMyWindow(unittest.TestCase):
         print(f"running {function_name()} {COUNTER}")
         self.log_in()
         # print("test_del_pass_page;;;"*10)
-        print(f"{self.win._data=}")
+        # print(f"{self.win._data=}")
         children = self.win._delete_password_page.get_children()
         refresh_button = children[0]
         hbox = children[1].get_children()
@@ -379,8 +378,6 @@ class TestMyWindow(unittest.TestCase):
         while self.win._data:
             iter_ = random.randint(0, len(self.win._data)-1)
             selector_combobox.set_active(iter_)
-            print(f"{self.win._data=}")
-            print(f"{self.win._data[iter_]=}")
             siteusp = self.siteusps[iter_].split('\t\t')
             self.assertEqual(user_label.get_text(), siteusp[1])
             self.assertEqual(pass_label.get_text(), f"{siteusp[2][:20]}{'...' if len(siteusp[2]) > 20 else ''}")
@@ -391,9 +388,37 @@ class TestMyWindow(unittest.TestCase):
             self.assertEqual(user_label.get_text(), '')
             self.assertEqual(pass_label.get_text(), '')
 
-    def test_change_password(self):
+    def test_change_password_page(self):
         print(f"running {function_name()} {COUNTER}")
         self.log_in()
+        children = self.win._modify_password_page.get_children()
+        refresh_button = children[0]
+        selector_combobox = children[1]
+        hbox = children[2].get_children()
+        reset_button = hbox[0]
+        site_entry = hbox[1]
+        site_button = hbox[2]
+        hbox = children[3].get_children()
+        save_button = hbox[0]
+        user_entry = hbox[1]
+        user_button = hbox[2]
+        hbox = children[4].get_children()
+        generate_button = hbox[0]
+        password_entry = hbox[1]
+        password_button = hbox[2]
+        self.assertEqual(selector_combobox.get_active(), -1)
+        for i in range(100):
+            iter_ = random.randint(0, len(self.win._data)-1)
+            selector_combobox.set_active(iter_)
+            siteusp = self.siteusps[iter_].split('\t\t')
+            self.assertEqual(site_entry.get_text(), siteusp[0])
+            self.assertEqual(user_entry.get_text(), siteusp[1])
+            self.assertEqual(password_entry.get_text(), siteusp[2])
+
+            self.assertFalse(site_entry.get_editable())
+            self.assertFalse(user_entry.get_editable())
+            self.assertFalse(password_entry.get_editable())
+
 
     def test_generate_pass_page(self):
         print(f"running {function_name()} {COUNTER}")
