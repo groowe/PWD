@@ -273,11 +273,8 @@ class MyWindow(Gtk.Window):
 
     def _save_all_passwords(self):
         """Save all data in memory to file."""
-        add = False  # overwrite existing
-        for record in self._data:
-            newpass(self._hashed, record, add, filename=self.file_)
-            if not add:
-                add = True  # append
+        for i, record in enumerate(self._data):
+            newpass(self._hashed, record, i != 0, filename=self.file_)
 
     def _change_master_password(self, *_):
         """Everyting needed for change master password."""
@@ -300,6 +297,8 @@ class MyWindow(Gtk.Window):
                     self._old_pass.set_text('')
                     self._new_pass.set_text('')
                     self._new_pass_2.set_text('')
+                    return True
+        return False
 
     def _use_generated_password(self, *_):
         if self._list_of_passwords:
@@ -495,6 +494,8 @@ class MyWindow(Gtk.Window):
             self._selected_password.set_range(
                 0, len(self._list_of_passwords)-1
             )
+            return True
+        return False
 
     def _show_pass(self, *_):
         text = ''
@@ -505,7 +506,7 @@ class MyWindow(Gtk.Window):
                 # assign value
                 text = self._list_of_passwords[val]
         self._chosen_password.set_text(text)
-        return
+        return bool(text)
 
     def _manage_del_pass_page(self):
         self._delete_password_page = Gtk.Box(

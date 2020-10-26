@@ -409,7 +409,6 @@ class TestMyWindow(unittest.TestCase):
         sup_entry = [site_entry, user_entry, password_entry]
         sup_button = [site_button, user_button, password_button]
 
-
         self.assertEqual(selector_combobox.get_active(), -1)
 
         self.assertTrue('return' in reset_button.get_label())
@@ -474,11 +473,122 @@ class TestMyWindow(unittest.TestCase):
     def test_generate_pass_page(self):
         print(f"running {function_name()} {COUNTER}")
         self.log_in()
+        self.assertTrue(self.win._generate_for is None)
+        self.assertTrue(self.win._list_of_passwords == [])
+
+        generate_button = self.win._generate_password_page.get_child_at(0, 0)
+        chosen_password_label = self.win._chosen_password
+        selected_password_spinbutton = self.win._selected_password
+        use_pass = self.win._use_pass
+        lowercase = self.win._use_lowercase
+        uppercase = self.win._use_uppercase
+        digits = self.win._use_digits
+        specials = self.win._use_specials
+        extra = self.win._use_extra
+        enforce_secure = self.win._enforce_secure
+        minlen_spinbutton = self.win._minlen
+        maxlen_spinbutton = self.win._maxlen
+        list_of_passwords = self.win._list_of_passwords
+
+        togglers = [lowercase, uppercase, specials, extra, digits]
+        len_tog = len(togglers)
+        for b in range(2**len_tog):
+            on = [bool(int(i)) for i in f'{bin(b)[2:]:>{len_tog}}'.replace(' ', '0')]
+            # set togglers on/off
+            for t, tog in enumerate(togglers):
+                tog.set_active(on[t])
+                self.assertEqual(tog.get_active(), on[t])
+
+            self.assertTrue(refresh_gui())
+            min_ = 3 if (sumon := sum(on)) < 3 else sumon
+            self.assertTrue(minlen_spinbutton.get_value_as_int() >= min_)
+            self.assertEqual(len(self.win._list_of_passwords), 0)
+            self.assertEqual(chosen_password_label.get_text(), '')
+            self.assertTrue(self.win._generate(generate_button) == bool(sumon))
+            self.assertTrue(refresh_gui())
+
+            if not sumon:
+                self.assertEqual(len(self.win._list_of_passwords), 0)
+                continue
+
+            self.assertEqual(len(self.win._list_of_passwords), 10)
+            self.assertFalse(chosen_password_label.get_text() == '')
+            pw = self.win._list_of_passwords[0]
+            self.assertTrue(chosen_password_label.get_text() == pw)
+            for i, pw in enumerate(self.win._list_of_passwords):
+                self.win._selected_password.set_value(i)
+                self.assertEqual(chosen_password_label.get_text(), pw)
+                # TBD: validate if password is what it suppose to be
+                min_ = minlen_spinbutton.get_value_as_int()
+                max_ = maxlen_spinbutton.get_value_as_int()
+                self.assertTrue(min_ <= len(pw) <= max_)
 
     def test__settings_page(self):
         print(f"running {function_name()} {COUNTER}")
         self.log_in()
 
+        change_pass_button = self.win._change_pass_page.get_child_at(0, 4)
+        #  change main password
+        entries = [
+                self.win._old_pass,
+                self.win._new_pass,
+                self.win._new_pass_2]
+        # get different password than current
+        l_p = [i for i in self.passw]
+        random.shuffle(l_p)
+        l_p = ''.join(l_p)
+
+        for entry in entries:
+            self.assertEqual(entry.get_text(), '')
+            entry.set_text(l_p)
+
+        # wrong password
+        self.assertTrue(refresh_gui())
+        change_pass_button.clicked()
+        self.assertTrue(refresh_gui())
+        for entry in entries:
+            self.assertEqual(entry.get_text(), l_p)
+            entry.set_text(self.passw)
+
+        # good password,but same as last
+        self.assertTrue(refresh_gui())
+        change_pass_button.clicked()
+        self.assertTrue(refresh_gui())
+
+        # source of random passwords:
+        generate_button = self.win._generate_password_page.get_child_at(0, 0)
+        generate_button.clicked()
+        self.assertTrue(refresh_gui())
+
+        while self.win._list_of_passwords:
+            # ensure old password is entered
+            if not entries[0].get_text():
+                entries[0].set_text(self.passw)
+            new_pass = self.win._list_of_passwords.pop()
+            # print(f"{new_pass=}")
+            entries[1].set_text(new_pass)
+            l_p = [i for i in new_pass]
+            random.shuffle(l_p)
+            l_p = ''.join(l_p)
+            entries[2].set_text(l_p)
+            # good password,but next two doesn't match
+            self.assertTrue(refresh_gui())
+            # print("refresh")
+            change_pass_button.clicked()
+            self.assertTrue(refresh_gui())
+            # print("refresh")
+
+            for entry in entries:
+                self.assertFalse(entry.get_text() == '')
+
+            entries[2].set_text(new_pass)
+            # now all match
+            self.assertTrue(refresh_gui())
+            # print("refresh")
+
+            self.passw = new_pass
+
 
 if __name__ == '__main__':
     unittest.main()
+    # define the function blocks
