@@ -19,16 +19,19 @@ from new_gen import MyWindow
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gtk, GLib, Gdk
+from gi.repository import Gtk  # , GLib, Gdk
 
 FILENAME = 'test_safepasswords'
 COUNTER = 0
 
 
 def function_name():
+    """
+    #    print(f"running {function_name()} {COUNTER}")
+    """
     global COUNTER
     COUNTER += 1
-    # print(f"running {function_name()} {COUNTER}")
+
     return sys._getframe().f_back.f_code.co_name
 
 
@@ -52,7 +55,12 @@ def password_to_file(filename=FILENAME):
     for i in range(10):
         # su = newrandompass(min_length=10, max_length=10)[:4]
         # pss = newrandompass(min_length=10+i, max_length=10+i)[0]
-        siteusps.append('\t\t'.join([rpd.pop(), rpd.pop(), (rpd.pop()+rpd.pop()+rpd.pop())[:10+(i*2)]]))
+        rdp_pop = [
+                rpd.pop(),
+                rpd.pop(),
+                (rpd.pop()+rpd.pop()+rpd.pop())[:10+(i*2)]
+                ]
+        siteusps.append('\t\t'.join(rdp_pop))
         # print(siteusps[-1])
     keys = []
     for i in range(4):
@@ -75,26 +83,27 @@ def password_to_file(filename=FILENAME):
 
 class Testpwtools(unittest.TestCase):
     def setUp(self):
-        # print(f"running {function_name()} {COUNTER}")
         if readfileraw(filename=FILENAME):
             remove(FILENAME)
 
     def tearDown(self):
-        # print(f"running {function_name()} {COUNTER}")
         if readfileraw(filename=FILENAME):
             remove(FILENAME)
 
     def test_hash_it(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         for value in l_string:
-            self.passw = ''.join(random.choices(value, k=random.randint(20, 100)))
+
+            self.passw = ''.join(
+                            random.choices(value, k=random.randint(20, 100))
+                            )
             self.assertEqual(hash_it(self.passw),
                              hashlib.sha512(
                                  self.passw.encode('utf-8')
                                 ).hexdigest())
 
     def test_validatepass(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         for value in l_string:
             passw = ''.join(random.choices(value, k=random.randint(20, 100)))
             self.assertTrue(validatepass(passw, [value]))
@@ -102,18 +111,18 @@ class Testpwtools(unittest.TestCase):
 
         for i in range(10):
             passw = ''.join([''.join(random.choices(value, k=i+5))
-                                 for value in l_string])
+                             for value in l_string])
             self.assertTrue(validatepass(passw, l_string))
             self.assertFalse(validatepass(passw, l_string+[' ']))
             for ls in l_string:
                 l_s = [value for value in l_string if value != ls]
                 passw = ''.join([''.join(random.choices(value, k=i+5))
-                                     for value in l_s])
+                                 for value in l_s])
                 self.assertFalse(validatepass(passw, l_string))
                 self.assertTrue(validatepass(passw, l_s))
 
     def test_genpass(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         for i in range(10):
             minlen, maxlen = i*2+5, i*3+5
             for value in genpass(l_string, minlen, maxlen):
@@ -127,7 +136,7 @@ class Testpwtools(unittest.TestCase):
                 self.assertFalse(validatepass(value, l_string))
 
     def test_newrandompass(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         vars_ = [newrandompass(low=False),
                  newrandompass(high=False),
                  newrandompass(specials=False),
@@ -142,7 +151,7 @@ class Testpwtools(unittest.TestCase):
                 self.assertFalse(validatepass(data, l_string))
 
     def test_readfileraw(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         self.assertFalse(readfileraw(filename=FILENAME))
         info = "plain file"
         with open(FILENAME, 'w') as file:
@@ -152,9 +161,11 @@ class Testpwtools(unittest.TestCase):
                          [info])
 
     def test_decrypt(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         self.hashed = hash_it('userpassword').encode('utf-8')
-        self.siteusps = '\t\t'.join(['site', 'user', 'password']).encode('utf-8')
+        self.siteusps = '\t\t'.join(
+                                ['site', 'user', 'password']
+                                ).encode('utf-8')
         key = base64.urlsafe_b64encode(self.hashed[:32])
         fer = Fernet(key)
         token = fer.encrypt(self.siteusps)
@@ -172,7 +183,7 @@ class Testpwtools(unittest.TestCase):
         self.assertRaises(TypeError, decrypt)
 
     def test_uncode(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         self.assertRaises(TypeError, uncode)
         self.assertRaises(SystemExit, uncode, '\t\t', filename=FILENAME)
         new = password_to_file()
@@ -182,7 +193,7 @@ class Testpwtools(unittest.TestCase):
         self.assertEqual(uncode(self.hashed, filename=FILENAME), self.siteusps)
 
     def test_readfile(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         self.assertRaises(TypeError, readfile)
         new = password_to_file()
 
@@ -195,14 +206,13 @@ class Testpwtools(unittest.TestCase):
                          self.siteusps)
 
     def test_validate_password(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         self.assertEqual(validate_password('', filename=FILENAME), False)
         self.assertEqual(validate_password('eaae', filename=FILENAME), False)
         self.assertEqual(validate_password('af', filename=FILENAME), None)
 
-
     def test_newpass(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         if readfileraw(filename=FILENAME):
             remove(FILENAME)
         new = password_to_file()
@@ -215,7 +225,9 @@ class Testpwtools(unittest.TestCase):
             self.siteusps_ = ['site', 'user', ps]
             newpass(self.hashed, self.siteusps_, filename=FILENAME)
             self.siteusps.append('\t\t'.join(self.siteusps_))
-            self.assertEqual(readfile(self.hashed, full=True, filename=FILENAME),
+            self.assertEqual(readfile(self.hashed,
+                                      full=True,
+                                      filename=FILENAME),
                              self.siteusps)
         self.assertEqual(newpass(self.hashed, delete=True, filename=FILENAME),
                          None)
@@ -236,7 +248,6 @@ def refresh_gui(delay=0):
 
 class TestMyWindow(unittest.TestCase):
     def setUp(self):
-        # print(f"running {function_name()} {COUNTER}")
         self.win = MyWindow(file_=FILENAME)
         # self.win.show_all()
         # Gtk.main()
@@ -246,7 +257,6 @@ class TestMyWindow(unittest.TestCase):
         self.hashed = data['hashed']
 
     def tearDown(self):
-        # print(f"running {function_name()} {COUNTER}")
         if readfileraw(filename=FILENAME):
             remove(FILENAME)
         del self.win
@@ -255,13 +265,12 @@ class TestMyWindow(unittest.TestCase):
         del self.hashed
 
     def log_in(self):
-        # print(f"running {function_name()} {COUNTER}")
         self.win._entry.set_text(self.passw)
         self.win._button.clicked()
         self.assertTrue(refresh_gui())
 
     def test_progressbar(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
 
         self.assertEqual(self.win._progressbar.get_fraction(), 0.0)
         self.win._progressbar.set_fraction(0.5)
@@ -271,13 +280,14 @@ class TestMyWindow(unittest.TestCase):
         self.win._progressbar.set_fraction(0.999)
         # self.assertRaises(ValueError, self.win._on_timeout)
         print("expecting following error:")
-        print("Gtk-CRITICAL ** gtk_main_quit: assertion 'main_loops != NULL' failed")
+        print("Gtk-CRITICAL ** gtk_main_quit:"
+              + " assertion 'main_loops != NULL' failed")
         # self.assertRaises(Gtk-CRITICAL, self.win._on_timeout)
         self.assertRaises(SystemExit, self.win._on_timeout)
         # self.assertEqual(self.win._progressbar.get_fraction(), 1)
 
     def test_main_page(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         # self.win = MyWindow(file_=FILENAME)
         self.assertEqual(self.win.file_, FILENAME)
         self.assertEqual(self.win._entry.get_text(), "password")
@@ -302,7 +312,7 @@ class TestMyWindow(unittest.TestCase):
         # self.assertEqual(self.win._notebook.get_current_page(), -1)
 
     def test__add_pass_page(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
 
         # self.win = MyWindow(file_=FILENAME)
         # data = password_to_file()
@@ -356,21 +366,21 @@ class TestMyWindow(unittest.TestCase):
             self.assertTrue(refresh_gui())
             self.assertEqual(self.win._data, self.siteusps)
 
-
     def test__read_page_pass_page(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         # somehow test_read... fails Gtk and unittest won't finish..
         # I have no clue why
         self.log_in()
 
-        children = self.win._read_password_page.get_children()
-        refresh_button = children[0]
+        # children = self.win._read_password_page.get_children()
+        # refresh_button = children[0]
         # print(children)
         shows = [self.win._data_iterators,
                  self.win._usershows,
                  self.win._passshows]
         self.assertEqual(shows[0][0].get_active_iter(), None)
-        self.assertEqual(self.win._counter_label.get_text(), f"{len(self.win._data)} passwords")
+        self.assertEqual(self.win._counter_label.get_text(),
+                         f"{len(self.win._data)} passwords")
         # print(self.siteusps)
         for ii, siteup in enumerate(self.siteusps):
             shows[0][0].set_active(ii)
@@ -384,18 +394,22 @@ class TestMyWindow(unittest.TestCase):
                     elif i < 2 or (i == 2 and isinstance(sh, gi.repository.Gtk.Entry)):
                         self.assertEqual(sh.get_text(), siteusp[i])
                     else:
-                        self.assertEqual(sh.get_text(), f"{siteusp[i][:20]}{'...' if len(siteusp[i]) > 20 else ''}")
+                        sup = siteusp[i][:20]
+                        if len(siteusp[i]) > 20:
+                            sup += '...'
+                        self.assertEqual(sh.get_text(), sup)
             self.assertEqual(len(self.win._data), len(self.siteusps))
 
-            self.assertEqual(self.win._counter_label.get_text(), f"{len(self.win._data)} passwords")
+            self.assertEqual(self.win._counter_label.get_text(),
+                             f"{len(self.win._data)} passwords")
 
     def test_del_pass_page(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         self.log_in()
         # print("test_del_pass_page;;;"*10)
         # print(f"{self.win._data=}")
         children = self.win._delete_password_page.get_children()
-        refresh_button = children[0]
+        # refresh_button = children[0]
         hbox = children[1].get_children()
         selector_combobox = hbox[0]
         delete_button = hbox[1]
@@ -407,7 +421,10 @@ class TestMyWindow(unittest.TestCase):
             selector_combobox.set_active(iter_)
             siteusp = self.siteusps[iter_].split('\t\t')
             self.assertEqual(user_label.get_text(), siteusp[1])
-            self.assertEqual(pass_label.get_text(), f"{siteusp[2][:20]}{'...' if len(siteusp[2]) > 20 else ''}")
+            self.assertEqual(pass_label.get_text(),
+                             f"{siteusp[2][:20]}"
+                             + f"{'...' if len(siteusp[2]) > 20 else ''}"
+                             )
             delete_button.clicked()
             self.siteusps.pop(iter_)
             self.assertTrue(refresh_gui())
@@ -416,11 +433,11 @@ class TestMyWindow(unittest.TestCase):
             self.assertEqual(pass_label.get_text(), '')
 
     def test_change_password_page(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         self.log_in()
         children = self.win._modify_password_page.get_children()
 
-        refresh_button = children[0]
+        # refresh_button = children[0]
         selector_combobox = children[1]
         hbox = children[2].get_children()
         reset_button = hbox[0]
@@ -527,29 +544,30 @@ class TestMyWindow(unittest.TestCase):
         # TBD: add here test for generate_button
 
     def test_generate_pass_page(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         self.log_in()
         self.assertTrue(self.win._generate_for is None)
         self.assertTrue(self.win._list_of_passwords == [])
 
         generate_button = self.win._generate_password_page.get_child_at(0, 0)
         chosen_password_label = self.win._chosen_password
-        selected_password_spinbutton = self.win._selected_password
-        use_pass = self.win._use_pass
+        # selected_password_spinbutton = self.win._selected_password
+        # use_pass = self.win._use_pass
         lowercase = self.win._use_lowercase
         uppercase = self.win._use_uppercase
-        digits = self.win._use_digits
+        digits_ = self.win._use_digits
         specials = self.win._use_specials
         extra = self.win._use_extra
-        enforce_secure = self.win._enforce_secure
+        # enforce_secure = self.win._enforce_secure
         minlen_spinbutton = self.win._minlen
         maxlen_spinbutton = self.win._maxlen
-        list_of_passwords = self.win._list_of_passwords
+        # list_of_passwords = self.win._list_of_passwords
 
-        togglers = [lowercase, uppercase, specials, extra, digits]
+        togglers = [lowercase, uppercase, specials, extra, digits_]
         len_tog = len(togglers)
         for b in range(2**len_tog):
-            on = [bool(int(i)) for i in f'{bin(b)[2:]:>{len_tog}}'.replace(' ', '0')]
+            bin_b = f'{bin(b)[2:]:>{len_tog}}'.replace(' ', '0')
+            on = [bool(int(i)) for i in bin_b]
             # set togglers on/off
             for t, tog in enumerate(togglers):
                 tog.set_active(on[t])
@@ -580,15 +598,15 @@ class TestMyWindow(unittest.TestCase):
                 self.assertTrue(min_ <= len(pw) <= max_)
 
     def test__settings_page(self):
-        print(f"running {function_name()} {COUNTER}")
+        # print(f"running {function_name()} {COUNTER}")
         self.log_in()
 
         change_pass_button = self.win._change_pass_page.get_child_at(0, 4)
         #  change main password
         entries = [
-                self.win._old_pass,
-                self.win._new_pass,
-                self.win._new_pass_2]
+            self.win._old_pass,
+            self.win._new_pass,
+            self.win._new_pass_2]
         # get different password than current
         l_p = [i for i in self.passw]
         random.shuffle(l_p)
