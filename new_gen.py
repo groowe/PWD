@@ -620,7 +620,7 @@ class MyWindow(Gtk.Window):
         self._edit_password.set_name("noentry")
         self._passshows.append(self._edit_password)
         button = Gtk.Button(label=f"{'generate':^10}")
-        button.connect("clicked", self._button_generate)
+        button.connect("clicked", self._button_generate, 2)
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=3)
         hbox.pack_start(button, False, False, 0)
         button = Gtk.Button(label=f"{'edit':^10}")
@@ -791,7 +791,7 @@ class MyWindow(Gtk.Window):
         self._add_password_page.attach(self._hide_entry_p, 2, 3, 1, 1)
 
         button_password = Gtk.Button(label="generate password")
-        button_password.connect("clicked", self._button_generate)
+        button_password.connect("clicked", self._button_generate, 0)
         self._add_password_page.attach(button_password, 0, 4, 3, 1)
 
     def _hide_text(self, widget, string_info):
@@ -867,13 +867,17 @@ class MyWindow(Gtk.Window):
         if site+username+password:
             self._record_for_del = f"{site}\t\t{username}\t\t{password}"
 
-    def _button_generate(self, widget):
+    def _button_generate(self, widget, pagenum):
         """
         Switches to "generate password" page
         and remembers where it was sent from.
         """
         # remember where it was sent from
         self._generate_for = self._passpage.get_current_page()
+        if self._generate_for == -1:
+            # for tests or possible glitches
+            # (when testing without rendering, gtk seem to return -1)
+            self._generate_for = pagenum
         self._use_pass.set_label(
             f"{'copy' if self._generate_for is None else 'use'} pass"
             )

@@ -335,7 +335,7 @@ class TestMyWindow(unittest.TestCase):
             generate_button.clicked()
             self.assertTrue(refresh_gui())
             self.assertFalse(self.win._generate_for is None)
-            self.win._generate_for = 0
+            # self.win._generate_for = 0
             # print(len(self.win._list_of_passwords))
             if not self.win._list_of_passwords:
 
@@ -467,7 +467,8 @@ class TestMyWindow(unittest.TestCase):
 
             if sup == 2:
                 generate_button.clicked()
-                # self.assertTrue(self.win._generate(generate_button) == bool(sumon))
+                # self.assertTrue(self.win._generate(generate_button)
+                #                   == bool(sumon))
                 self.assertTrue(refresh_gui())
                 self.assertFalse(self.win._generate_for is None)
                 if not self.win._list_of_passwords:
@@ -476,7 +477,7 @@ class TestMyWindow(unittest.TestCase):
                 # self.assertFalse(self.win._list_of_passwords)
                 self.assertFalse(self.win._list_of_passwords == [])
                 self.assertFalse(self.win._generate_for is None)
-                self.win._generate_for = 2
+                # self.win._generate_for = 2
                 # print(f"{self.win._generate_for=}")
                 self.win._use_pass.clicked()
                 self.assertTrue(refresh_gui())
