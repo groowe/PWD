@@ -329,6 +329,33 @@ class TestMyWindow(unittest.TestCase):
         self.siteusps.append('123\t\t789\t\t456')
         self.assertEqual(self.win._data, self.siteusps)
         # self.assertEqual(self.win._passpage.get_current_page(), -1)
+        generate_button = self.win._add_password_page.get_child_at(0, 4)
+        generate_password = self.win._generate_password_page.get_child_at(0, 0)
+        for i in range(30):
+            generate_button.clicked()
+            self.assertTrue(refresh_gui())
+            self.assertFalse(self.win._generate_for is None)
+            self.win._generate_for = 0
+            # print(len(self.win._list_of_passwords))
+            if not self.win._list_of_passwords:
+
+                generate_password.clicked()
+                self.assertTrue(refresh_gui())
+            self.win._use_pass.clicked()
+            self.assertTrue(refresh_gui())
+            self.assertTrue(self.win._generate_for is None)
+            new_string = self.win._list_of_passwords[0]
+            self.assertEqual(self.win._entry_password.get_text(), new_string)
+            ran_site = new_string[:5]
+            ran_user = new_string[-5:]
+            self.win._entry_page.set_text(ran_site)
+            self.win._entry_username.set_text(ran_user)
+            self.siteusps.append(f'{ran_site}\t\t{ran_user}\t\t{new_string}')
+            self.assertFalse(self.win._data == self.siteusps)
+            save_button.clicked()
+            self.assertTrue(refresh_gui())
+            self.assertEqual(self.win._data, self.siteusps)
+
 
     def test__read_page_pass_page(self):
         print(f"running {function_name()} {COUNTER}")
@@ -392,6 +419,7 @@ class TestMyWindow(unittest.TestCase):
         print(f"running {function_name()} {COUNTER}")
         self.log_in()
         children = self.win._modify_password_page.get_children()
+
         refresh_button = children[0]
         selector_combobox = children[1]
         hbox = children[2].get_children()
@@ -408,6 +436,8 @@ class TestMyWindow(unittest.TestCase):
         password_button = hbox[2]
         sup_entry = [site_entry, user_entry, password_entry]
         sup_button = [site_button, user_button, password_button]
+
+        generate_password = self.win._generate_password_page.get_child_at(0, 0)
 
         self.assertEqual(selector_combobox.get_active(), -1)
 
@@ -431,32 +461,57 @@ class TestMyWindow(unittest.TestCase):
             # changing part
 
             sup = random.randint(0, 2)
-            if not avail_passes:
+            # print(f"{sup=}")
+            if sup < 2 and not avail_passes:
                 avail_passes.extend(newrandompass())
 
-            new_string = avail_passes.pop()
+            if sup == 2:
+                generate_button.clicked()
+                # self.assertTrue(self.win._generate(generate_button) == bool(sumon))
+                self.assertTrue(refresh_gui())
+                self.assertFalse(self.win._generate_for is None)
+                if not self.win._list_of_passwords:
+                    generate_password.clicked()
+                    self.assertTrue(refresh_gui())
+                # self.assertFalse(self.win._list_of_passwords)
+                self.assertFalse(self.win._list_of_passwords == [])
+                self.assertFalse(self.win._generate_for is None)
+                self.win._generate_for = 2
+                # print(f"{self.win._generate_for=}")
+                self.win._use_pass.clicked()
+                self.assertTrue(refresh_gui())
+                self.assertTrue(self.win._generate_for is None)
+                new_string = self.win._list_of_passwords[0]
+                self.assertEqual(sup_entry[2].get_text(),
+                                 new_string)
+
+            # if not avail_passes:
+            #     avail_passes.extend(newrandompass())
+
+            # new_string = avail_passes.pop()
 
             sup_button[sup].clicked()
             refresh_gui()
             for i, entry in enumerate(sup_entry):
                 self.assertEqual(entry.get_editable(), i == sup)
+            if sup < 2:
+                new_string = avail_passes.pop()
+                sup_entry[sup].set_text(new_string)
+                self.assertTrue(refresh_gui())
 
-            sup_entry[sup].set_text(new_string)
-            refresh_gui()
+                self.assertEqual(sup_entry[sup].get_text(), new_string)
+                self.assertFalse(sup_entry[sup].get_text() == siteusp[sup])
 
-            self.assertEqual(sup_entry[sup].get_text(), new_string)
-            self.assertFalse(sup_entry[sup].get_text() == siteusp[sup])
+                reset_button.clicked()
+                self.assertTrue(refresh_gui())
+                self.assertEqual(sup_entry[sup].get_text(), siteusp[sup])
+                self.assertFalse(sup_entry[sup].get_text() == new_string)
 
-            reset_button.clicked()
-            refresh_gui()
-            self.assertEqual(sup_entry[sup].get_text(), siteusp[sup])
-            self.assertFalse(sup_entry[sup].get_text() == new_string)
-
-            sup_entry[sup].set_text(new_string)
-            refresh_gui()
+                sup_entry[sup].set_text(new_string)
+                self.assertTrue(refresh_gui())
 
             save_button.clicked()
-            refresh_gui()
+            self.assertTrue(refresh_gui())
 
             for entry in sup_entry:
                 self.assertEqual(entry.get_text(), '')
